@@ -1,16 +1,19 @@
+use crossterm::{
+    input, ClearType, Colored, Color, InputEvent, KeyEvent
+}; 
+
+use crossterm::RawScreen;
+use crossterm::cursor;
+use crossterm::terminal;
+
+use std::io::{stdout, Write};  
+use std::process::exit;
+
+
+use std::collections::BTreeMap;
+
+
 fn main() {
-    use crossterm::{
-        input, ClearType, Colored, Color
-    }; 
-
-    use crossterm::RawScreen;
-    use crossterm::cursor;
-    use crossterm::terminal;
-
-    use std::io::{stdout, Write};  
-    use std::process::exit;
-
-    use std::collections::BTreeMap;
 
     let mut map: BTreeMap<String, bool> = BTreeMap::new();
 
@@ -23,6 +26,8 @@ fn main() {
     let mut stdout = stdout();
     let mut cursor = cursor();
     let terminal = terminal();
+
+    let mut stdin = input.read_sync();
 
     // let mut tokens = vec!["simulate_bms", "simulate_battery", "ahree"];
     let commands = vec!["#list"];
@@ -49,137 +54,143 @@ fn main() {
 
         let tokens : Vec<&str> = map.keys().map(|x| x.as_str()).collect();
 
-        // match input character
-        match input.read_char() {
-            // on a voalid character
+        if let Some(key_event) = stdin.next() {
+            match key_event {
+                InputEvent::Keyboard(KeyEvent::Char(c)) => {
+                    match c {
+                        // ctrl + c to exit
+                        '\u{0003}' => {
 
-            Ok(c) => {
-                match c {
-                    // ctrl + c to exit
-                    '\u{3}' => {
-                        RawScreen::disable_raw_mode().unwrap();
-                        exit(exitcode::OK);
-                    },
-                    // backspace
-                    '\u{7f}' => {
-                        if !keyword.is_empty() {
-                            keyword.pop();
-                            cursor.move_left(1);
-                            terminal.clear(ClearType::UntilNewLine).unwrap();
-                        }
-                    }
-                    '\t' => {
-                        // get autocomplete results
-                        let (similar, common) = autocomplete(&trimmed, &tokens);
+                        },
+                        '\t' => {
+                            // get autocomplete results
+                            let (similar, common) = autocomplete(&trimmed, &tokens);
 
-                        // if there is a common str, print it
-                        if let Some(common) = common {
-                            cursor.move_left(cursor.pos().0);
-                            print!(":{}", common);
-                            keyword = common.to_owned().to_string();
+                            // if there is a common str, print it
+                            if let Some(common) = common {
+                                cursor.move_left(cursor.pos().0);
+                                print!(":{}", common);
+                                keyword = common.to_owned().to_string();
 
-                        }
-
-                        // if there are more than one keywords, print them at the bottom of the current line
-                        if similar.len() > 1 {
-
-                            // give some space for an extra line
-                            if cursor.pos().1 == terminal.terminal_size().1 - 1  {
-                                terminal.scroll_up(1).unwrap();
-                                cursor.move_up(1);
                             }
 
-                            // save cursor position
-                            cursor.save_position().unwrap();
+                            // if there are more than one keywords, print them at the bottom of the current line
+                            if similar.len() > 1 {
 
-                            // goto next line
-                            cursor.goto(0, cursor.pos().1 + 1).unwrap();
+                                // give some space for an extra line
+                                if cursor.pos().1 == terminal.terminal_size().1 - 1  {
+                                    terminal.scroll_up(1).unwrap();
+                                    cursor.move_up(1);
+                                }
 
-                            // print all the similar keywords
-                            for word in similar {
-                                print!("{}{} ", Colored::Fg(Color::Green), word);
+                                // save cursor position
+                                cursor.save_position().unwrap();
+
+                                // goto next line
+                                cursor.goto(0, cursor.pos().1 + 1).unwrap();
+
+                                // print all the similar keywords
+                                for word in similar {
+                                    print!("{}{} ", Colored::Fg(Color::Green), word);
+                                }
+
+                                // erase all after cursor
+                                terminal.clear(ClearType::UntilNewLine).unwrap();
+
+                                // reset position
+                                cursor.reset_position().unwrap();
+                            } else {
+                                terminal.clear(ClearType::FromCursorDown).unwrap();
                             }
-
-                            // erase all after cursor
+                        },
+                        '\r' | '\n' => {
+                            // go to next line
                             terminal.clear(ClearType::UntilNewLine).unwrap();
-
-                            // reset position
-                            cursor.reset_position().unwrap();
-                        } else {
                             terminal.clear(ClearType::FromCursorDown).unwrap();
-                        }
-                    },
-                    '\r' => {
-                        // go to next line
-                        terminal.clear(ClearType::UntilNewLine).unwrap();
-                        terminal.clear(ClearType::FromCursorDown).unwrap();
-                        println!("");
-                        cursor.move_left(cursor.pos().0);
-                        // check if keyword is part of contents
-                        if  let Some(value) = map.get(&trimmed) {
-                            let new_value = !value;
-                            map.insert(trimmed.clone(), new_value);
-                            print!("{} set to {}", trimmed, new_value);
                             println!("");
                             cursor.move_left(cursor.pos().0);
-                        } else 
-                        if commands.iter().any(|&x| x == trimmed) {
-                            match trimmed.as_str() {
-                                "#list" => {
-                                    
-                                    for token in tokens.iter() {
-                                        println!("{}", token);
-                                        cursor.move_left(cursor.pos().0);
+                            // check if keyword is part of contents
+                            if  let Some(value) = map.get(&trimmed) {
+                                let new_value = !value;
+                                map.insert(trimmed.clone(), new_value);
+                                print!("{} set to {}", trimmed, new_value);
+                                println!("");
+                                cursor.move_left(cursor.pos().0);
+                            } else 
+                            if commands.iter().any(|&x| x == trimmed) {
+                                match trimmed.as_str() {
+                                    "#list" => {
+                                        
+                                        for token in tokens.iter() {
+                                            println!("{}", token);
+                                            cursor.move_left(cursor.pos().0);
+                                        }
                                     }
+                                    _ => return,
                                 }
-                                _ => continue,
+                            }
+
+                            // clear keyword
+                            keyword.clear();
+                            print!(":");
+                        }
+                        _ => {
+                            if c.is_alphanumeric() || c == '#' || c == '_' {
+                                // insert new char to keyword
+                                keyword.push(c);
+                                let trimmed = keyword.trim_end();
+
+                                print!("{}", c);
+
+                                // get autocomplete results
+                                let tokens : Vec<&str> = map.keys().map(|x| x.as_str()).collect();
+                                let (_, common) = autocomplete(&trimmed, &tokens);
+
+                                if let Some(result) = common {
+                                    // save current position so we can return
+                                    cursor.save_position().unwrap();
+
+                                    // print in grey the autocompleted part
+                                    print!("{}{}", Colored::Fg(Color::Rgb {r: 125, g: 125, b: 125}), result.split_at(trimmed.len()).1);
+                                    
+                                    // return the cursor for the next loop
+                                    cursor.reset_position().unwrap();
+                                } else {
+                                    // clear everything left of the cursor
+                                    terminal.clear(ClearType::UntilNewLine).unwrap();
+                                    terminal.clear(ClearType::FromCursorDown).unwrap();
+                                }
+
                             }
                         }
-
-                        // clear keyword
-                        keyword.clear();
-                        print!(":");
+                    }                
+                },
+                InputEvent::Keyboard(KeyEvent::Backspace) => {
+                    if !keyword.is_empty() {
+                        keyword.pop();
+                        cursor.move_left(1);
+                        terminal.clear(ClearType::UntilNewLine).unwrap();
                     }
-                    _ => {
-                        // insert new char to keyword
-                        keyword.push(c);
-                        let trimmed = keyword.trim_end();
-
-                        print!("{}", c);
-
-                        // get autocomplete results
-                        let tokens : Vec<&str> = map.keys().map(|x| x.as_str()).collect();
-                        let (_, common) = autocomplete(&trimmed, &tokens);
-
-                        if let Some(result) = common {
-                            // save current position so we can return
-                            cursor.save_position().unwrap();
-
-                            // print in grey the autocompleted part
-                            print!("{}{}", Colored::Fg(Color::Rgb {r: 125, g: 125, b: 125}), result.split_at(trimmed.len()).1);
-                            
-                            // return the cursor for the next loop
-                            cursor.reset_position().unwrap();
-                        } else {
-                            // clear everything left of the cursor
-                            terminal.clear(ClearType::UntilNewLine).unwrap();
-                            terminal.clear(ClearType::FromCursorDown).unwrap();
-                        }
+                },
+                InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
+                    if c == 'c' {
+                        stdout.flush().unwrap();
+                        RawScreen::disable_raw_mode().unwrap();
+                        exit(exitcode::OK);
                     }
                 }
-            },
-
-            // on invalid character exit 
-            Err(e) => {
-                RawScreen::disable_raw_mode().unwrap();
-                println!("{}",e);
-                exit(exitcode::IOERR);
-            },
-        };
+                _ => {
+                    RawScreen::disable_raw_mode().unwrap();
+                    std::process::exit(1);
+                }
+            }
+        }
     }
 }
 
-
+fn process_char(c: char, trimmed: String, tokens: Vec<&str>, commands : &Vec<&str>, keyword : &mut String, map:&mut BTreeMap<String, bool>) {
+    
+}
 
 
 // returns the common str slice of a collection od strs
