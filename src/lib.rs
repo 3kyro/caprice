@@ -49,11 +49,12 @@ impl Flags {
 
     /// Creates a new flags structure using the tokens found
     /// in the provide vector and initialising all of them to false
-    pub fn from_vec(vec: &Vec<&str>) {
+    pub fn from_vec(vec: &Vec<&str>) -> Self {
         let mut flags = Flags::new();
         for flag in vec.iter() {
             flags.map.insert(String::from(*flag), false);
         }
+        flags
     }
 
     pub fn insert(&mut self, flag: String) {
