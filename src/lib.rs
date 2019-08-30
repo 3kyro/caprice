@@ -156,24 +156,7 @@ impl Flags {
 
                                 print!("{}", c);
 
-                                // get autocomplete results
-                                let tokens : Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
-                                let (_, common) = autocomplete(&trimmed, &tokens);
-
-                                if let Some(result) = common {
-                                    // save current position so we can return
-                                    self.cursor.save_position().unwrap();
-
-                                    // print in grey the autocompleted part
-                                    print!("{}{}", Colored::Fg(Color::Rgb {r: 125, g: 125, b: 125}), result.split_at(trimmed.len()).1);
-                                    
-                                    // return the self.cursor for the next loop
-                                    self.cursor.reset_position().unwrap();
-                                } else {
-                                    // clear everything left of the self.cursor
-                                    self.terminal.clear(ClearType::UntilNewLine).unwrap();
-                                    self.terminal.clear(ClearType::FromCursorDown).unwrap();
-                                }
+                                self.print_autocompleted(&trimmed.to_owned());
 
                             }
                         }
@@ -204,6 +187,27 @@ impl Flags {
         let mut  screen = RawScreen::into_raw_mode().unwrap();
         screen.disable_drop();
         print!("{}", self.prompt);
+    }
+
+    fn print_autocompleted(&self, trimmed: &String) {
+        // get autocomplete results
+        let tokens : Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
+        let (_, common) = autocomplete(&trimmed, &tokens);
+
+        if let Some(result) = common {
+            // save current position so we can return
+            self.cursor.save_position().unwrap();
+
+            // print in grey the autocompleted part
+            print!("{}{}", Colored::Fg(Color::Rgb {r: 125, g: 125, b: 125}), result.split_at(trimmed.len()).1);
+            
+            // return the self.cursor for the next loop
+            self.cursor.reset_position().unwrap();
+        } else {
+            // clear everything left of the self.cursor
+            self.terminal.clear(ClearType::UntilNewLine).unwrap();
+            self.terminal.clear(ClearType::FromCursorDown).unwrap();
+        }
     }
 } 
 
