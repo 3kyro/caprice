@@ -75,10 +75,6 @@ impl Flags {
             match key_event {
                 InputEvent::Keyboard(KeyEvent::Char(c)) => {
                     match c {
-                        // ctrl + c to exit
-                        '\u{0003}' => {
-
-                        },
                         '\t' => {
                             // get autocomplete results
                             let (similar, common) = autocomplete(&trimmed, &tokens);
