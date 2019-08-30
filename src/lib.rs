@@ -1,24 +1,22 @@
-
 use crossterm::{
-    input, ClearType, Colored, Color, InputEvent, KeyEvent, RawScreen, cursor, terminal, Terminal, SyncReader, TerminalCursor
-}; 
+    cursor, input, terminal, ClearType, Color, Colored, InputEvent, KeyEvent, RawScreen,
+    SyncReader, Terminal, TerminalCursor,
+};
 
-use std::io::{stdout, Write, Stdout};  
+use std::io::{stdout, Stdout, Write};
 use std::process::exit;
 
 use std::collections::BTreeMap;
 
-
 pub struct Flags {
     pub map: BTreeMap<String, bool>,
-    commands: [&'static str;1],
+    commands: [&'static str; 1],
     stdin: SyncReader,
     stdout: Stdout,
     cursor: TerminalCursor,
     terminal: Terminal,
     keyword: String,
     prompt: String,
-
 }
 
 impl Flags {
@@ -26,7 +24,7 @@ impl Flags {
     /// Flags need to be inserted individually using the insert method
     pub fn new() -> Self {
         Flags {
-            map:  BTreeMap::new(),
+            map: BTreeMap::new(),
             commands: ["#list"],
             stdin: input().read_sync(),
             stdout: stdout(),
@@ -37,7 +35,7 @@ impl Flags {
         }
     }
 
-    /// Creates a new flags structure using the values 
+    /// Creates a new flags structure using the values
     /// from the provided BTreeMap.
     /// This method allows you to initialise the flags according to your needs
     /// rather than the default false value when using from_vec
@@ -49,7 +47,7 @@ impl Flags {
 
     /// Creates a new flags structure using the tokens found
     /// in the provide vector and initialising all of them to false
-    pub fn from_vec(vec: &Vec<&str>) -> Self {
+    pub fn from_vec(vec: &[&str]) -> Self {
         let mut flags = Flags::new();
         for flag in vec.iter() {
             flags.map.insert(String::from(*flag), false);
@@ -61,7 +59,7 @@ impl Flags {
         self.map.insert(flag, false);
     }
 
-    /// Runs the caprice prompt once, 
+    /// Runs the caprice prompt once,
     pub fn run(&mut self) {
         // flush the terminal so we see the work previoulsy done
         // TODO: check where best to put it
@@ -69,7 +67,7 @@ impl Flags {
 
         let trimmed = self.keyword.trim_end().to_owned();
 
-        let tokens : Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
+        let tokens: Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
 
         if let Some(key_event) = self.stdin.next() {
             match key_event {
@@ -84,14 +82,12 @@ impl Flags {
                                 self.cursor.move_left(self.cursor.pos().0);
                                 print!("{}{}", self.prompt, common);
                                 self.keyword = common.to_owned().to_string();
-
                             }
 
                             // if there are more than one keywords, print them at the bottom of the current line
                             if similar.len() > 1 {
-
                                 // give some space for an extra line
-                                if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1  {
+                                if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
                                     self.terminal.scroll_up(1).unwrap();
                                     self.cursor.move_up(1);
                                 }
@@ -115,26 +111,24 @@ impl Flags {
                             } else {
                                 self.terminal.clear(ClearType::FromCursorDown).unwrap();
                             }
-                        },
+                        }
                         // enter
                         '\r' | '\n' => {
                             // go to next line
                             self.terminal.clear(ClearType::UntilNewLine).unwrap();
                             self.terminal.clear(ClearType::FromCursorDown).unwrap();
-                            println!("");
+                            println!();
                             self.cursor.move_left(self.cursor.pos().0);
                             // check if keyword is part of contents
-                            if  let Some(value) = self.map.get(&trimmed) {
+                            if let Some(value) = self.map.get(&trimmed) {
                                 let new_value = !value;
                                 self.map.insert(trimmed.clone(), new_value);
                                 print!("{} set to {}", trimmed, new_value);
-                                println!("");
+                                println!();
                                 self.cursor.move_left(self.cursor.pos().0);
-                            } else 
-                            if self.commands.iter().any(|&x| x == trimmed) {
+                            } else if self.commands.iter().any(|&x| x == trimmed) {
                                 match trimmed.as_str() {
                                     "#list" => {
-                                        
                                         for token in tokens.iter() {
                                             println!("{}", token);
                                             self.cursor.move_left(self.cursor.pos().0);
@@ -157,18 +151,17 @@ impl Flags {
                                 print!("{}", c);
 
                                 self.print_autocompleted(&trimmed.to_owned());
-
                             }
                         }
-                    }                
-                },
+                    }
+                }
                 InputEvent::Keyboard(KeyEvent::Backspace) => {
                     if !self.keyword.is_empty() {
                         self.keyword.pop();
                         self.cursor.move_left(1);
                         self.terminal.clear(ClearType::UntilNewLine).unwrap();
                     }
-                },
+                }
                 InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
                     if c == 'c' {
                         self.stdout.flush().unwrap();
@@ -176,22 +169,21 @@ impl Flags {
                         exit(exitcode::OK);
                     }
                 }
-                _ => {
-                }
+                _ => {}
             }
         }
     }
 
     /// Initialises the terminal.
     pub fn init(&self) {
-        let mut  screen = RawScreen::into_raw_mode().unwrap();
+        let mut screen = RawScreen::into_raw_mode().unwrap();
         screen.disable_drop();
         print!("{}", self.prompt);
     }
 
-    fn print_autocompleted(&self, trimmed: &String) {
+    fn print_autocompleted(&self, trimmed: &str) {
         // get autocomplete results
-        let tokens : Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
+        let tokens: Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
         let (_, common) = autocomplete(&trimmed, &tokens);
 
         if let Some(result) = common {
@@ -199,8 +191,16 @@ impl Flags {
             self.cursor.save_position().unwrap();
 
             // print in grey the autocompleted part
-            print!("{}{}", Colored::Fg(Color::Rgb {r: 125, g: 125, b: 125}), result.split_at(trimmed.len()).1);
-            
+            print!(
+                "{}{}",
+                Colored::Fg(Color::Rgb {
+                    r: 125,
+                    g: 125,
+                    b: 125
+                }),
+                result.split_at(trimmed.len()).1
+            );
+
             // return the self.cursor for the next loop
             self.cursor.reset_position().unwrap();
         } else {
@@ -209,9 +209,15 @@ impl Flags {
             self.terminal.clear(ClearType::FromCursorDown).unwrap();
         }
     }
-} 
+}
 
-// make sure we return  from the raw mode 
+impl Default for Flags {
+    fn default() -> Self {
+        Flags::new()
+    }
+}
+
+// make sure we return  from the raw mode
 impl Drop for Flags {
     fn drop(&mut self) {
         RawScreen::disable_raw_mode().unwrap();
@@ -230,27 +236,24 @@ fn return_common_str_from_sorted_collection(collection: Vec<&str>) -> Option<&st
     } else {
         // take the first element
         let mut first = collection[0];
-        
+
         for _ in 0..first.len() {
             // if all others start with it then we have found our str
             if collection.iter().all(|&x| x.starts_with(first)) {
-                return Some(first.clone())
-                
+                return Some(&(*first));
             } else {
                 // else remove the last character and try again
-                first = first.split_at(first.len() - 1).0; 
+                first = first.split_at(first.len() - 1).0;
             }
         }
         // if we tried all slices, there is no common str
         None
     }
-    
 }
 
-// takes a word and a list of keywords and returns the sub set of the collection that starts
+// takes a word and a slice of keywords and returns the sub set of the collection that starts
 // with the word and the biggest common starting str of this collection
-fn autocomplete<'a>(word: &str, keywords: &'a Vec<&str>) -> (Vec<&'a str>, Option<&'a str>) {
-
+fn autocomplete<'a>(word: &str, keywords: &'a [&str]) -> (Vec<&'a str>, Option<&'a str>) {
     let similar: Vec<&str>;
 
     // do not return anything until word is atleast one char long
@@ -258,10 +261,16 @@ fn autocomplete<'a>(word: &str, keywords: &'a Vec<&str>) -> (Vec<&'a str>, Optio
         return (Vec::with_capacity(0), None);
     }
 
-    similar = keywords.iter().filter(|&x| x.starts_with(word)).map(|x| *x).collect();
+    similar = keywords
+        .iter()
+        .filter(|&x| x.starts_with(word))
+        .copied()
+        .collect();
 
-    (similar.clone(), return_common_str_from_sorted_collection(similar.clone()))
-
+    (
+        similar.clone(),
+        return_common_str_from_sorted_collection(similar.clone()),
+    )
 }
 
 #[cfg(test)]
@@ -276,11 +285,11 @@ mod tests {
 
         let word = "random_word";
         let keywords: Vec<&str> = Vec::new();
-        assert_eq!(autocomplete(word, &keywords),((Vec::new(), None)));
+        assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
 
         let word = "";
         let keywords: Vec<&str> = Vec::new();
-        assert_eq!(autocomplete(word, &keywords),((Vec::new(), None)));
+        assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
     }
 
     #[test]
@@ -292,22 +301,64 @@ mod tests {
 
         // returns correclty full sets with full word
         let word = "some_word";
-        let keywords = vec!["some_word", "some_word", "some_word", "some_word", "some_word"];
-        assert_eq!(autocomplete(word, &keywords), (vec!["some_word", "some_word", "some_word", "some_word", "some_word"], Some("some_word")));
+        let keywords = vec![
+            "some_word",
+            "some_word",
+            "some_word",
+            "some_word",
+            "some_word",
+        ];
+        assert_eq!(
+            autocomplete(word, &keywords),
+            (
+                vec![
+                    "some_word",
+                    "some_word",
+                    "some_word",
+                    "some_word",
+                    "some_word"
+                ],
+                Some("some_word")
+            )
+        );
 
         // returns correclty full sets with one or more char
         let word = "s";
-        let keywords = vec!["some_word", "some_word", "some_word", "some_word", "some_word"];
-        assert_eq!(autocomplete(word, &keywords), (vec!["some_word", "some_word", "some_word", "some_word", "some_word"], Some("some_word")));
+        let keywords = vec![
+            "some_word",
+            "some_word",
+            "some_word",
+            "some_word",
+            "some_word",
+        ];
+        assert_eq!(
+            autocomplete(word, &keywords),
+            (
+                vec![
+                    "some_word",
+                    "some_word",
+                    "some_word",
+                    "some_word",
+                    "some_word"
+                ],
+                Some("some_word")
+            )
+        );
 
         // returns correclty sets
         let word = "s";
         let keywords = vec!["some_word", "some_other_word", "none"];
-        assert_eq!(autocomplete(word, &keywords), (vec!["some_word", "some_other_word"], Some("some_")));
+        assert_eq!(
+            autocomplete(word, &keywords),
+            (vec!["some_word", "some_other_word"], Some("some_"))
+        );
 
         // returns correclty sets
         let word = "some_w";
         let keywords = vec!["some_word", "some_other_word", "none"];
-        assert_eq!(autocomplete(word, &keywords), (vec!["some_word"], Some("some_word")));
+        assert_eq!(
+            autocomplete(word, &keywords),
+            (vec!["some_word"], Some("some_word"))
+        );
     }
 }
