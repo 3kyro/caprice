@@ -61,7 +61,7 @@ impl Flags {
     }
 
     /// Runs the caprice prompt once, 
-    pub fn run_once(&mut self) {
+    pub fn run(&mut self) {
         // flush the terminal so we see the work previoulsy done
         // TODO: check where best to put it
         self.stdout.flush().unwrap();
@@ -202,23 +202,19 @@ impl Flags {
         }
     }
 
+    /// Initialises the terminal.
     pub fn init(&self) {
         let mut  screen = RawScreen::into_raw_mode().unwrap();
         screen.disable_drop();
         print!("{}", self.prompt);
     }
-
-    pub fn run(&mut self) {
-        
-        loop {
-            self.run_once();
-        }
-    }
 } 
 
+// make sure we return  from the raw mode 
 impl Drop for Flags {
     fn drop(&mut self) {
         RawScreen::disable_raw_mode().unwrap();
+        self.terminal.exit();
     }
 }
 

@@ -27,7 +27,7 @@ fn main() {
     
     flags.init();
     loop {
-        flags.run_once();
+        flags.run();
     }
 }
 
