@@ -29,6 +29,10 @@ fn main() {
 
     flags.init();
     loop {
-        flags.run();
+        if let Ok(()) = flags.run() {
+            continue;
+        } else {
+            break;
+        }
     }
 }

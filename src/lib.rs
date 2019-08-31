@@ -12,7 +12,9 @@ use std::collections::BTreeMap;
 
 use autocomplete::autocomplete;
 
+use std::io::{Error, ErrorKind};
 
+type Result<T> = std::result::Result<T,std::io::Error>;
 
 pub struct Flags {
     pub map: BTreeMap<String, bool>,
@@ -66,10 +68,10 @@ impl Flags {
     }
 
     /// Runs the caprice prompt once,
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> Result<()> {
         // flush the terminal so we see the work previoulsy done
         // TODO: check where best to put it
-        self.stdout.flush().unwrap();
+        self.stdout.flush()?;
 
         let trimmed = self.keyword.trim_end().to_owned();
 
@@ -88,7 +90,7 @@ impl Flags {
 
                             // exit in the rare case where the terminal has 0 width
                             if self.terminal.terminal_size().0 == 0 {
-                                RawScreen::disable_raw_mode().unwrap();
+                                RawScreen::disable_raw_mode()?;
                                 exit(exitcode::IOERR);
                             } 
 
@@ -103,15 +105,15 @@ impl Flags {
                             if similar.len() > 1 {
                                 // give some space for an extra line
                                 if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
-                                    self.terminal.scroll_up(1).unwrap();
+                                    self.terminal.scroll_up(1)?;
                                     self.cursor.move_up(1);
                                 }
 
                                 // save self.cursor position
-                                self.cursor.save_position().unwrap();
+                                self.cursor.save_position()?;
 
                                 // goto next line
-                                self.cursor.goto(0, self.cursor.pos().1 + 1).unwrap();
+                                self.cursor.goto(0, self.cursor.pos().1 + 1)?;
 
                                 // print all the similar keywords
                                 for word in similar {
@@ -119,20 +121,20 @@ impl Flags {
                                 }
 
                                 // erase all after self.cursor
-                                self.terminal.clear(ClearType::UntilNewLine).unwrap();
+                                self.terminal.clear(ClearType::UntilNewLine)?;
 
                                 // reset position
-                                self.cursor.reset_position().unwrap();
+                                self.cursor.reset_position()?;
 
                             } else {
-                                self.terminal.clear(ClearType::FromCursorDown).unwrap();
+                                self.terminal.clear(ClearType::FromCursorDown)?;
                             }
                         }
                         // enter
                         '\r' | '\n' => {
                             // go to next line
-                            self.terminal.clear(ClearType::UntilNewLine).unwrap();
-                            self.terminal.clear(ClearType::FromCursorDown).unwrap();
+                            self.terminal.clear(ClearType::UntilNewLine)?;
+                            self.terminal.clear(ClearType::FromCursorDown)?;
                             println!();
                             self.cursor.move_left(self.cursor.pos().0);
                             // check if keyword is part of contents
@@ -150,7 +152,7 @@ impl Flags {
                                             self.cursor.move_left(self.cursor.pos().0);
                                         }
                                     }
-                                    _ => return,
+                                    _ => return Ok(()),
                                 }
                             }
 
@@ -175,17 +177,19 @@ impl Flags {
                     if !self.keyword.is_empty() {
                         self.keyword.pop();
                         self.cursor.move_left(1);
-                        self.terminal.clear(ClearType::UntilNewLine).unwrap();
+                        self.terminal.clear(ClearType::UntilNewLine)?;
                     }
                 }
                 InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
                     if c == 'c' {
-                        exit(exitcode::OK);
+                        return Err(Error::new(ErrorKind::Interrupted, "user aborted"));
                     }
                 }
                 _ => {}
             }
         }
+
+        Ok(())
     }
 
     /// Initialises the terminal.
