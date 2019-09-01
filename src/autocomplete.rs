@@ -37,23 +37,21 @@ impl<'a> Autocomplete {
 
 // returns the common str slice of a collection of str slices
 // returns None if no common slice can be found
-fn return_common_str_from_sorted_collection(collection: Vec<&str>) -> Option<&str> {
+fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Option<String> {
     // take the first element of the sorted list and check if the rest of the elements start with
     // if not remove last character and repeat
+    let copied_collection = collection.clone();
     if collection.is_empty() {
         // if empty there is nothing to do
         None
     } else {
-        // take the first element
-        let mut first = collection[0];
 
-        for _ in 0..first.len() {
-            // if all others start with it then we have found our str
-            if collection.iter().all(|&x| x.starts_with(first)) {
-                return Some(&(*first));
+        if let Some(first) = collection.first_mut() {
+            if copied_collection.iter().all(|x| (x).starts_with(first.as_str())) {
+                return Some(first.clone());
             } else {
                 // else remove the last character and try again
-                first = first.split_at(first.len() - 1).0;
+                first.pop();
             }
         }
         // if we tried all slices, there is no common str
@@ -63,8 +61,8 @@ fn return_common_str_from_sorted_collection(collection: Vec<&str>) -> Option<&st
 
 // takes a word and a slice of keywords and returns the sub set of the collection that starts
 // with the word and the biggest common starting str of this collection
-pub(crate) fn autocomplete<'a>(word: &str, keywords: &'a [&str]) -> (Vec<&'a str>, Option<&'a str>) {
-    let similar: Vec<&str>;
+pub(crate) fn autocomplete<'a>(word: String, keywords: &'a Vec<String>) -> (Vec<String>, Option<String>) {
+    let similar: Vec<String>;
 
     // do not return anything until word is atleast one char long
     if word.is_empty() {
@@ -73,13 +71,13 @@ pub(crate) fn autocomplete<'a>(word: &str, keywords: &'a [&str]) -> (Vec<&'a str
 
     similar = keywords
         .iter()
-        .filter(|&x| x.starts_with(word))
-        .copied()
+        .filter(|&x| x.starts_with(&word))
+        .map(|x| x.clone())
         .collect();
 
     (
         similar.clone(),
-        return_common_str_from_sorted_collection(similar.clone()),
+        return_common_str_from_sorted_collection(&mut similar.clone()),
     )
 }
 
@@ -90,86 +88,86 @@ mod tests {
 
     #[test]
     fn autocomplete_empty_input() {
-        let word = "";
-        let keywords = vec!["non", "important", "for", "this", "test"];
+        let word = "".to_owned();
+        let keywords = vec!["non".to_owned(), "important".to_owned(), "for".to_owned(), "this".to_owned(), "test".to_owned()];
         assert_eq!(autocomplete(word, &keywords), (Vec::new(), None));
 
-        let word = "random_word";
-        let keywords: Vec<&str> = Vec::new();
+        let word = "random_word".to_owned();
+        let keywords: Vec<String> = Vec::new();
         assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
 
-        let word = "";
-        let keywords: Vec<&str> = Vec::new();
+        let word = "".to_owned();
+        let keywords: Vec<String> = Vec::new();
         assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
     }
 
     #[test]
     fn autocomplete_returns_as_expected() {
         // returns correclty empty sets
-        let word = "some_word";
-        let keywords = vec!["non", "important", "for", "this", "test"];
+        let word = "some_word".to_owned();
+        let keywords = vec!["non".to_owned(), "important".to_owned(), "for".to_owned(), "this".to_owned(), "test".to_owned()];
         assert_eq!(autocomplete(word, &keywords), (Vec::new(), None));
 
         // returns correclty full sets with full word
-        let word = "some_word";
+        let word = "some_word".to_owned();
         let keywords = vec![
-            "some_word",
-            "some_word",
-            "some_word",
-            "some_word",
-            "some_word",
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
         ];
         assert_eq!(
             autocomplete(word, &keywords),
             (
                 vec![
-                    "some_word",
-                    "some_word",
-                    "some_word",
-                    "some_word",
-                    "some_word"
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned()
                 ],
-                Some("some_word")
+                Some("some_word".to_owned())
             )
         );
 
         // returns correclty full sets with one or more char
-        let word = "s";
+        let word = "s".to_owned();
         let keywords = vec![
-            "some_word",
-            "some_word",
-            "some_word",
-            "some_word",
-            "some_word",
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
+            "some_word".to_owned(),
         ];
         assert_eq!(
             autocomplete(word, &keywords),
             (
                 vec![
-                    "some_word",
-                    "some_word",
-                    "some_word",
-                    "some_word",
-                    "some_word"
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned(),
+                    "some_word".to_owned()
                 ],
-                Some("some_word")
+                Some("some_word".to_owned())
             )
         );
 
         // returns correclty sets
-        let word = "s";
-        let keywords = vec!["some_word", "some_other_word", "none"];
+        let word = "s".to_owned();
+        let keywords = vec!["some_word".to_owned(), "some_other_word".to_owned(), "none".to_owned()];
         assert_eq!(
             autocomplete(word, &keywords),
-            (vec!["some_word", "some_other_word"], Some("some_"))
+            (vec!["some_word".to_owned(), "some_other_word".to_owned()], Some("some_".to_owned()))
         );
 
         // returns correclty sets
-        let word = "some_w";
-        let keywords = vec!["some_word", "some_other_word", "none"];
+        let word = "some_w".to_owned();
+        let keywords = vec!["some_word".to_owned(), "some_other_word".to_owned(), "none".to_owned()];
         assert_eq!(
             autocomplete(word, &keywords),
-            (vec!["some_word"], Some("some_word"))
+            (vec!["some_word".to_owned()], Some("some_word".to_owned()))
         );
     }
 
