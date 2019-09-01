@@ -9,6 +9,8 @@ by pressing tab you just change the bg color of one of the items in the list
 
 */
 
+use crossterm::{Attribute, Colored, Color};
+
 pub(crate) struct Autocomplete {
     content: String,
     selected: bool,
@@ -61,8 +63,9 @@ fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Opt
 
 // takes a word and a slice of keywords and returns the sub set of the collection that starts
 // with the word and the biggest common starting str of this collection
-pub(crate) fn autocomplete<'a>(word: String, keywords: &'a Vec<String>) -> (Vec<String>, Option<String>) {
-    let similar: Vec<String>;
+pub(crate) fn autocomplete<'a>(word: &'a String, keywords: &'a Vec<String>) -> (Vec<String>, Option<String>) {
+    
+    let mut similar: Vec<String>;
 
     // do not return anything until word is atleast one char long
     if word.is_empty() {
@@ -71,14 +74,28 @@ pub(crate) fn autocomplete<'a>(word: String, keywords: &'a Vec<String>) -> (Vec<
 
     similar = keywords
         .iter()
-        .filter(|&x| x.starts_with(&word))
+        .filter(|x| x.starts_with(word))
         .map(|x| x.clone())
         .collect();
 
     (
         similar.clone(),
-        return_common_str_from_sorted_collection(&mut similar.clone()),
+        return_common_str_from_sorted_collection(&mut similar),
     )
+}
+
+pub(crate) fn print_same_line_autocompleted(result: String, buffer: &str) {
+    // print in grey the autocompleted part
+    print!(
+        "{}{}{}",
+        Colored::Fg(Color::Rgb {
+            r: 125,
+            g: 125,
+            b: 125
+        }),
+        result.split_at(buffer.len()).1,
+        Attribute::Reset
+    );
 }
 
 mod tests {
@@ -90,15 +107,15 @@ mod tests {
     fn autocomplete_empty_input() {
         let word = "".to_owned();
         let keywords = vec!["non".to_owned(), "important".to_owned(), "for".to_owned(), "this".to_owned(), "test".to_owned()];
-        assert_eq!(autocomplete(word, &keywords), (Vec::new(), None));
+        assert_eq!(autocomplete(&word, &keywords), (Vec::new(), None));
 
         let word = "random_word".to_owned();
         let keywords: Vec<String> = Vec::new();
-        assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
+        assert_eq!(autocomplete(&word, &keywords), ((Vec::new(), None)));
 
         let word = "".to_owned();
         let keywords: Vec<String> = Vec::new();
-        assert_eq!(autocomplete(word, &keywords), ((Vec::new(), None)));
+        assert_eq!(autocomplete(&word, &keywords), ((Vec::new(), None)));
     }
 
     #[test]
@@ -106,7 +123,7 @@ mod tests {
         // returns correclty empty sets
         let word = "some_word".to_owned();
         let keywords = vec!["non".to_owned(), "important".to_owned(), "for".to_owned(), "this".to_owned(), "test".to_owned()];
-        assert_eq!(autocomplete(word, &keywords), (Vec::new(), None));
+        assert_eq!(autocomplete(&word, &keywords), (Vec::new(), None));
 
         // returns correclty full sets with full word
         let word = "some_word".to_owned();
@@ -118,7 +135,7 @@ mod tests {
             "some_word".to_owned(),
         ];
         assert_eq!(
-            autocomplete(word, &keywords),
+            autocomplete(&word, &keywords),
             (
                 vec![
                     "some_word".to_owned(),
@@ -141,7 +158,7 @@ mod tests {
             "some_word".to_owned(),
         ];
         assert_eq!(
-            autocomplete(word, &keywords),
+            autocomplete(&word, &keywords),
             (
                 vec![
                     "some_word".to_owned(),
@@ -158,7 +175,7 @@ mod tests {
         let word = "s".to_owned();
         let keywords = vec!["some_word".to_owned(), "some_other_word".to_owned(), "none".to_owned()];
         assert_eq!(
-            autocomplete(word, &keywords),
+            autocomplete(&word, &keywords),
             (vec!["some_word".to_owned(), "some_other_word".to_owned()], Some("some_".to_owned()))
         );
 
@@ -166,7 +183,7 @@ mod tests {
         let word = "some_w".to_owned();
         let keywords = vec!["some_word".to_owned(), "some_other_word".to_owned(), "none".to_owned()];
         assert_eq!(
-            autocomplete(word, &keywords),
+            autocomplete(&word, &keywords),
             (vec!["some_word".to_owned()], Some("some_word".to_owned()))
         );
     }

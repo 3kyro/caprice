@@ -1,4 +1,5 @@
 mod autocomplete;
+mod parser;
 
 use crossterm::{
     cursor, input, terminal, ClearType, Color, Colored, InputEvent, KeyEvent, RawScreen,
@@ -10,9 +11,11 @@ use std::process::exit;
 
 use std::collections::BTreeMap;
 
-use autocomplete::autocomplete;
+use autocomplete::*;
 
 use std::io::{Error, ErrorKind};
+
+use parser::*;
 
 type Result<T> = std::result::Result<T,std::io::Error>;
 
@@ -25,6 +28,7 @@ pub struct Flags {
     terminal: Terminal,
     keyword: String,
     prompt: String,
+    parser: Parser,
 }
 
 impl Flags {
@@ -40,6 +44,7 @@ impl Flags {
             terminal: terminal(),
             keyword: String::new(),
             prompt: String::from("~ "),
+            parser: Parser::new(|_| Ok(())),
         }
     }
 
@@ -75,24 +80,22 @@ impl Flags {
 
         let trimmed = self.keyword.trim_end().to_owned();
 
-        let tokens: Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
+        let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
 
         if let Some(key_event) = self.stdin.next() {
             match key_event {
                 InputEvent::Keyboard(KeyEvent::Char(c)) => {
                     match c {
                         '\t' => {
-                            // get autocomplete results
-                            let (similar, common) = autocomplete(&trimmed, &tokens);
-
-                            // get number of characters
-                            let char_count = similar.iter().fold(0, |acc, x| acc + x.len());
 
                             // exit in the rare case where the terminal has 0 width
                             if self.terminal.terminal_size().0 == 0 {
                                 RawScreen::disable_raw_mode()?;
                                 exit(exitcode::IOERR);
                             } 
+                            
+                            // get autocomplete results
+                            let (mut similar, common) = autocomplete(&trimmed, &tokens);
 
                             // if there is a common str, print it
                             if let Some(common) = common {
@@ -101,8 +104,15 @@ impl Flags {
                                 self.keyword = common.to_owned().to_string();
                             }
 
+
+
+
+
                             // if there are more than one keywords, print them at the bottom of the current line
                             if similar.len() > 1 {
+
+                                Autocomplete::get_amortisized_array(&mut similar);
+                                
                                 // give some space for an extra line
                                 if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
                                     self.terminal.scroll_up(1)?;
@@ -132,11 +142,12 @@ impl Flags {
                         }
                         // enter
                         '\r' | '\n' => {
+                            
                             // go to next line
                             self.terminal.clear(ClearType::UntilNewLine)?;
                             self.terminal.clear(ClearType::FromCursorDown)?;
-                            println!();
-                            self.cursor.move_left(self.cursor.pos().0);
+                            print!("\r\n");
+
                             // check if keyword is part of contents
                             if let Some(value) = self.map.get(&trimmed) {
                                 let new_value = !value;
@@ -168,7 +179,7 @@ impl Flags {
 
                                 print!("{}", c);
 
-                                self.print_autocompleted(&trimmed.to_owned());
+                                self.print_autocompleted(trimmed.to_owned());
                             }
                         }
                     }
@@ -181,9 +192,7 @@ impl Flags {
                     }
                 }
                 InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
-                    if c == 'c' {
-                        return Err(Error::new(ErrorKind::Interrupted, "user aborted"));
-                    }
+                    self.parser.parse_ctrl_c(c)?;
                 }
                 _ => {}
             }
@@ -199,10 +208,12 @@ impl Flags {
         print!("{}", self.prompt);
     }
 
-    fn print_autocompleted(&self, trimmed: &str) {
+    /// Prints autocompleted results to the terminal
+    fn print_autocompleted(&self, trimmed: String) {
+
         // get autocomplete results
-        let tokens: Vec<&str> = self.map.keys().map(|x| x.as_str()).collect();
-        let (_, common) = autocomplete(&trimmed, &tokens);
+        let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
+        let (_, common) = autocomplete(&trimmed.clone(), &tokens);
 
         if let Some(result) = common {
             // save current position so we can return
