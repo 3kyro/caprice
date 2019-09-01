@@ -1,0 +1,2 @@
+Features:
+- ZSH like autocomplete
