@@ -1,9 +1,36 @@
 // lets define three dtata types
 
+/*
 
-pub(crate) struct TabWord {
+bash autocomplete,
+find the biggest word in teh list and amke every word that long by appending spaces
+the terminal should auto space them correctly
+by pressing tab you just change the bg color of one of the items in the list
+
+*/
+
+pub(crate) struct Autocomplete {
     content: String,
     selected: bool,
+}
+
+impl<'a> Autocomplete {
+    /// Amortisizes the input vector by returnig an array in which all elements
+    /// have the same length - that of the biggest one
+    pub(crate) fn get_amortisized_array(vector: &mut Vec<String>) ->  &Vec<String> {
+        
+
+        // get the length of the biggest word in similar
+        if let Some(max_len) = vector.iter().map(|x| x.len()).max() {
+            for word in vector.iter_mut() {
+                for _ in 0..max_len-word.len() {
+                    word.push(' ');
+                }
+            }
+        } 
+
+        vector
+    }
 }
 
 
@@ -144,6 +171,25 @@ mod tests {
             autocomplete(word, &keywords),
             (vec!["some_word"], Some("some_word"))
         );
+    }
+
+    #[test]
+    fn amortised() {
+        
+        // normal consditions
+        let mut vec = vec!["a".to_owned(), "ab".to_owned(), "abc".to_owned()];
+        assert_eq!(Autocomplete::get_amortisized_array(&mut vec), &vec!["a  ", "ab ", "abc"]);
+
+        // similar length
+        let mut vec = vec!["aa".to_owned(), "bb".to_owned(), "cc".to_owned()];
+        assert_eq!(Autocomplete::get_amortisized_array(&mut vec), &vec!["aa", "bb", "cc"]);
+
+        // empty vec
+        let mut vec = Vec::with_capacity(0);
+        let return_vec: Vec<String> = Vec::with_capacity(0);
+        assert_eq!(Autocomplete::get_amortisized_array(&mut vec), &return_vec);
+
+
     }
 
 }
