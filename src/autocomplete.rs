@@ -43,26 +43,21 @@ fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Opt
     // take the first element of the sorted list and check if the rest of the elements start with
     // if not remove last character and repeat
     let copied_collection = collection.clone();
-    if collection.is_empty() {
-        // if empty there is nothing to do
-        None
-    } else {
-
-        if let Some(first) = collection.first_mut() {
-            if copied_collection.iter().all(|x| (x).starts_with(first.as_str())) {
-                return Some(first.clone());
-            } else {
-                // else remove the last character and try again
-                first.pop();
-            }
+    
+    while let Some(first) = collection.first_mut() {
+        if copied_collection.iter().all(|x| x.starts_with(first.as_str())) {
+            return Some(first.clone());
+        } else {
+            // else remove the last character and try again
+            first.pop();
         }
-        // if we tried all slices, there is no common str
-        None
     }
+    // if we tried all slices, there is no common str
+    None
 }
 
 // takes a word and a slice of keywords and returns the sub set of the collection that starts
-// with the word and the biggest common starting str of this collection
+// with the word and the biggest common starting str of this collection (or None if this doesn't exist)
 pub(crate) fn autocomplete<'a>(word: &'a String, keywords: &'a Vec<String>) -> (Vec<String>, Option<String>) {
     
     let mut similar: Vec<String>;
