@@ -12,6 +12,7 @@ pub(crate) struct Parser {
     functor: fn(String) -> Result<()>,
     buffer: String,
     tokens: Vec<String>,
+    commands: Vec<String>
 }
 
 type Result<T> = std::result::Result<T, std::io::Error>;
@@ -23,6 +24,7 @@ impl Parser {
             functor : functor,
             buffer : String::new(),
             tokens : Vec::new(),
+            commands : Vec::new(),
         }
     }
 
@@ -74,6 +76,19 @@ impl Parser {
     }
 
     fn parse_enter(&self) -> Result<Option<String>> {
+        self.terminal.goto_next_line();
+        if self.tokens.contains(&self.buffer) {
+            return Ok(Some(self.buffer.clone()))
+        } else 
+        if self.commands.contains(&self.buffer) {
+            self.parse_command(&self.buffer);
+            Ok(None)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn parse_command(&self, command: &String) {
         unimplemented!()
     }
 
@@ -84,6 +99,8 @@ impl Parser {
             self.buffer = self.buffer.trim_end().to_string();
 
             print!("{}", c);
+
+            self.print_same_line_autocompleted()?
 
         }
 
