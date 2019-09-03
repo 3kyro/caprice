@@ -100,15 +100,14 @@ impl Parser {
 
             print!("{}", c);
 
-            self.print_same_line_autocompleted()?
+            self.print_autocompleted()?
 
         }
 
         Ok(None)
     }   
 
-    /// Prints 
-    fn print_same_line_autocompleted(&self) -> Result<()> {
+    fn print_autocompleted(&self) -> Result<()> {
         // get autocomplete results
         let (_, common) = autocomplete(&self.buffer, &self.tokens);
 
