@@ -1,5 +1,5 @@
 mod autocomplete;
-mod parser;
+pub mod parser;
 
 use crossterm::{
     cursor, input, terminal, ClearType, Color, Colored, InputEvent, KeyEvent, RawScreen,

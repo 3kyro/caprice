@@ -1,11 +1,14 @@
-use crossterm::{Terminal, KeyEvent, ClearType, TerminalCursor, Result};
+use crossterm::{Terminal, RawScreen, ClearType, TerminalCursor, Result, SyncReader, input, InputEvent, Attribute};
+use std::io::{stdout, Write, Stdout};
 
 
 
 
 pub(super) struct TerminalManipulator {
-    pub(super) terminal: crossterm::Terminal,
-    pub(super) cursor: TerminalCursor
+    pub(crate) terminal: crossterm::Terminal,
+    pub (crate) cursor: TerminalCursor,
+    stdin: SyncReader,
+    stdout: Stdout,
 } 
 
 impl TerminalManipulator {
@@ -13,12 +16,14 @@ impl TerminalManipulator {
         TerminalManipulator {
             terminal: Terminal::new(),
             cursor: TerminalCursor::new(),
+            stdin: input().read_sync(),
+            stdout: stdout(),
         }
 
     }
 
-    pub(super) fn next_key_event(&self) -> KeyEvent {
-        unimplemented!();
+    pub(super) fn next_key_event(&mut self) -> Option<InputEvent> {
+        self.stdin.next()
     }
 
     pub(super) fn clear_from_cursor(&self) -> Result<()> {
@@ -43,5 +48,30 @@ impl TerminalManipulator {
 
     pub(super) fn restore_cursor(&self) -> Result<()> {
         self.cursor.reset_position()
+    }
+
+    pub(super) fn enable_raw_screen(&self) -> Result<()> {
+        let mut screen = RawScreen::into_raw_mode()?;
+        screen.disable_drop();
+        
+        Ok(())
+    }
+
+    pub(crate) fn flush(&mut self) -> Result<()> {
+        self.stdout.flush()?;
+
+        Ok(())
+    }
+
+    pub(crate) fn exit(&self) -> Result<()> {
+        RawScreen::disable_raw_mode()?;
+        println!("{}", Attribute::Reset); 
+        self.terminal.exit();
+
+        Ok(())
+    }
+
+    pub(crate) fn goto_begining_of_line(&mut self) {
+        self.cursor.move_left(self.cursor.pos().0);
     }
 }

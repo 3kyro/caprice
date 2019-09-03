@@ -1,18 +1,24 @@
 mod terminal_manipulator;
 
 use terminal_manipulator::*;
-use crossterm::{KeyEvent};
+use crossterm::{KeyEvent, InputEvent, RawScreen};
 
 use std::io::{Error, ErrorKind};
 
 use super::autocomplete::*;
 
-pub(crate) struct Parser {
+enum Commands {
+    List,
+
+}
+
+pub struct Parser {
     terminal: TerminalManipulator,
     functor: fn(String) -> Result<()>,
     buffer: String,
     tokens: Vec<String>,
-    commands: Vec<String>
+    commands: Vec<String>,
+    prompt: String,
 }
 
 type Result<T> = std::result::Result<T, std::io::Error>;
@@ -23,30 +29,37 @@ impl Parser {
             terminal: TerminalManipulator::new(),
             functor : functor,
             buffer : String::new(),
-            tokens : Vec::new(),
-            commands : Vec::new(),
+            tokens : vec!["some_token".to_owned(), "some_other_token".to_owned(), "none".to_owned()],
+            commands: vec!["#list".to_owned()],
+            prompt: "~".to_owned(),
         }
     }
 
-    pub(crate) fn parse(&mut self) -> Result<Option<String>> {
-        match self.terminal.next_key_event() {
-            KeyEvent::Char(c) => {
-                if let Some(result_string) = self.parse_char(c)? {
-                    (self.functor)(result_string)?;
-                }
-            },
-            KeyEvent::Backspace => {
-                self.parse_backspace();
-            },
-            KeyEvent::Ctrl(c) => {
-                self.parse_ctrl_c(c)?;
-            },
-            _ => {}
+    pub fn parse(&mut self) -> Result<()> {
+        
+        self.terminal.flush()?;
+
+        if let Some(input_event) = self.terminal.next_key_event() {
+            match input_event  {
+                InputEvent::Keyboard(KeyEvent::Char(c))  => {
+                    // if let Some(result_string) = self.parse_char(c)? {
+                    //     (self.functor)(result_string)?;
+                    // }
+                    self.parse_char(c)?
+                },
+                InputEvent::Keyboard(KeyEvent::Backspace) => {
+                    self.parse_backspace();
+                },
+                InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
+                    self.parse_ctrl_c(c)?;
+                },
+                _ => {}
+            }
         }
-        Ok(None)
+        Ok(())
     }
 
-    fn parse_char(&mut self, c: char) -> Result<Option<String>> {
+    fn parse_char(&mut self, c: char) -> Result<()> {
         match c {
             '\t' => self.parse_tab(),
             '\r' | '\n' => self.parse_enter(),
@@ -66,33 +79,48 @@ impl Parser {
 
     pub (crate) fn parse_ctrl_c(&self, c: char) -> Result<()> {
         if c == 'c' {
-            return Err(Error::new(ErrorKind::Interrupted, "user aborted"));
+            self.terminal.exit()?;
         }
         Ok(())
     }
 
-    fn parse_tab(&self) -> Result<Option<String>> {
+    fn parse_tab(&self) -> Result<()> {
         unimplemented!()
     }
 
-    fn parse_enter(&self) -> Result<Option<String>> {
-        self.terminal.goto_next_line();
+    fn parse_enter(&mut self) -> Result<()> {
         if self.tokens.contains(&self.buffer) {
-            return Ok(Some(self.buffer.clone()))
+            (self.functor)(self.buffer.clone())?;
         } else 
         if self.commands.contains(&self.buffer) {
-            self.parse_command(&self.buffer);
-            Ok(None)
+            self.parse_command(&self.buffer.clone())?;
         } else {
-            Ok(None)
+            self.buffer.clear();
         }
+        self.next_line()?;
+        Ok(())
     }
 
-    fn parse_command(&self, command: &String) {
-        unimplemented!()
+    fn next_line(&self) -> Result<()> {
+        self.terminal.goto_next_line()?;
+        print!("{}", self.prompt);
+
+        Ok(())
+    } 
+
+    fn parse_command(&mut self, command: &String) -> Result<()> {
+        if command == "#list" {
+            self.terminal.goto_next_line()?;
+            for token in self.tokens.iter() {
+                println!("{}", token);
+                self.terminal.goto_begining_of_line(); 
+            }
+        }
+
+        Ok(())
     }
 
-    fn parse_valid_char(&mut self, c: char) -> Result<Option<String>> {
+    fn parse_valid_char(&mut self, c: char) -> Result<()> {
         if c.is_alphanumeric() || c == '#' || c == '_' {
             // insert new char to self.keyword
             self.buffer.push(c);
@@ -104,7 +132,16 @@ impl Parser {
 
         }
 
-        Ok(None)
+        Ok(())
+    }
+
+    pub fn init(&mut self) -> Result<()> {
+        self.terminal.enable_raw_screen()?;
+
+        print!("{}", self.prompt);
+
+        Ok(())
+        
     }   
 
     fn print_autocompleted(&self) -> Result<()> {
@@ -125,5 +162,11 @@ impl Parser {
         }
 
         Ok(())
+    }
+}
+
+impl Drop for Parser {
+    fn drop(&mut self) {
+        self.terminal.exit().unwrap();
     }
 }
