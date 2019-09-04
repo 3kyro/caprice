@@ -1,15 +1,15 @@
-use crossterm::{Terminal, RawScreen, ClearType, TerminalCursor, Result, SyncReader, input, InputEvent, Attribute};
-use std::io::{stdout, Write, Stdout};
-
-
-
+use crossterm::{
+    input, Attribute, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
+    TerminalCursor,
+};
+use std::io::{stdout, Stdout, Write};
 
 pub(super) struct TerminalManipulator {
     pub(crate) terminal: crossterm::Terminal,
-    pub (crate) cursor: TerminalCursor,
+    pub(crate) cursor: TerminalCursor,
     stdin: SyncReader,
     stdout: Stdout,
-} 
+}
 
 impl TerminalManipulator {
     pub(super) fn new() -> Self {
@@ -19,7 +19,6 @@ impl TerminalManipulator {
             stdin: input().read_sync(),
             stdout: stdout(),
         }
-
     }
 
     pub(super) fn next_key_event(&mut self) -> Option<InputEvent> {
@@ -53,7 +52,7 @@ impl TerminalManipulator {
     pub(super) fn enable_raw_screen(&self) -> Result<()> {
         let mut screen = RawScreen::into_raw_mode()?;
         screen.disable_drop();
-        
+
         Ok(())
     }
 
@@ -65,7 +64,7 @@ impl TerminalManipulator {
 
     pub(crate) fn exit(&self) -> Result<()> {
         RawScreen::disable_raw_mode()?;
-        println!("{}", Attribute::Reset); 
+        println!("{}", Attribute::Reset);
         self.terminal.exit();
 
         Ok(())

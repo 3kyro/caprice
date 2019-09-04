@@ -2,8 +2,8 @@ mod autocomplete;
 pub mod parser;
 
 use crossterm::{
-    cursor, input, terminal, ClearType, Color, Colored, InputEvent, KeyEvent, RawScreen,
-    SyncReader, Terminal, TerminalCursor, Attribute
+    cursor, input, terminal, Attribute, ClearType, Color, Colored, InputEvent, KeyEvent, RawScreen,
+    SyncReader, Terminal, TerminalCursor,
 };
 
 use std::io::{stdout, Stdout, Write};
@@ -15,7 +15,7 @@ use autocomplete::*;
 
 use parser::*;
 
-type Result<T> = std::result::Result<T,std::io::Error>;
+type Result<T> = std::result::Result<T, std::io::Error>;
 
 pub struct Flags {
     pub map: BTreeMap<String, bool>,
@@ -85,13 +85,12 @@ impl Flags {
                 InputEvent::Keyboard(KeyEvent::Char(c)) => {
                     match c {
                         '\t' => {
-
                             // exit in the rare case where the terminal has 0 width
                             if self.terminal.terminal_size().0 == 0 {
                                 RawScreen::disable_raw_mode()?;
                                 exit(exitcode::IOERR);
-                            } 
-                            
+                            }
+
                             // get autocomplete results
                             let (mut similar, common) = autocomplete(&trimmed, &tokens);
 
@@ -102,15 +101,10 @@ impl Flags {
                                 self.keyword = common.to_owned().to_string();
                             }
 
-
-
-
-
                             // if there are more than one keywords, print them at the bottom of the current line
                             if similar.len() > 1 {
-
                                 Autocomplete::get_amortisized_array(&mut similar);
-                                
+
                                 // give some space for an extra line
                                 if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
                                     self.terminal.scroll_up(1)?;
@@ -133,14 +127,12 @@ impl Flags {
 
                                 // reset position
                                 self.cursor.reset_position()?;
-
                             } else {
                                 self.terminal.clear(ClearType::FromCursorDown)?;
                             }
                         }
                         // enter
                         '\r' | '\n' => {
-                            
                             // go to next line
                             self.terminal.clear(ClearType::UntilNewLine)?;
                             self.terminal.clear(ClearType::FromCursorDown)?;
@@ -208,7 +200,6 @@ impl Flags {
 
     /// Prints autocompleted results to the terminal
     fn print_autocompleted(&self, trimmed: String) {
-
         // get autocomplete results
         let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
         let (_, common) = autocomplete(&trimmed.clone(), &tokens);
@@ -250,8 +241,7 @@ impl Drop for Flags {
         self.stdout.flush().unwrap();
         RawScreen::disable_raw_mode().unwrap();
         // reset any possible changes to the terminal's output
-        println!("{}", Attribute::Reset); 
+        println!("{}", Attribute::Reset);
         self.terminal.exit();
     }
 }
-

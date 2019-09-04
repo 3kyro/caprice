@@ -1,17 +1,12 @@
 use caprice::parser::*;
 
-
-
 fn main() {
-
-    
     let mut parser = Parser::new(functor);
 
     parser.init().unwrap();
     loop {
         parser.parse().unwrap();
     }
-
 }
 
 fn functor(s: String) -> Result<(), std::io::Error> {
