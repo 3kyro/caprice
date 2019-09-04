@@ -12,8 +12,6 @@ by pressing tab you just change the bg color of one of the items in the list
 use crossterm::{Attribute, Colored, Color};
 
 pub(crate) struct Autocomplete {
-    content: String,
-    selected: bool,
 }
 
 impl<'a> Autocomplete {

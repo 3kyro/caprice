@@ -1,16 +1,8 @@
 mod terminal_manipulator;
 
 use terminal_manipulator::*;
-use crossterm::{KeyEvent, InputEvent, RawScreen};
-
-use std::io::{Error, ErrorKind};
-
+use crossterm::{KeyEvent, InputEvent};
 use super::autocomplete::*;
-
-enum Commands {
-    List,
-
-}
 
 pub struct Parser {
     terminal: TerminalManipulator,
@@ -48,7 +40,7 @@ impl Parser {
                     self.parse_char(c)?
                 },
                 InputEvent::Keyboard(KeyEvent::Backspace) => {
-                    self.parse_backspace();
+                    self.parse_backspace()?;
                 },
                 InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
                     self.parse_ctrl_c(c)?;
@@ -96,7 +88,7 @@ impl Parser {
             self.parse_command(&self.buffer.clone())?;
         } else {
             self.buffer.clear();
-        }
+        }   
         self.next_line()?;
         Ok(())
     }

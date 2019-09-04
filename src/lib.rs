@@ -13,8 +13,6 @@ use std::collections::BTreeMap;
 
 use autocomplete::*;
 
-use std::io::{Error, ErrorKind};
-
 use parser::*;
 
 type Result<T> = std::result::Result<T,std::io::Error>;
