@@ -85,11 +85,15 @@ impl Parser {
     fn parse_enter(&mut self) -> Result<()> {
         if self.tokens.contains(&self.buffer) {
             (self.functor)(self.buffer.clone())?;
+            self.terminal.goto_begining_of_line();
         } else if self.commands.contains(&self.buffer) {
             self.parse_command(&self.buffer.clone())?;
+            self.terminal.goto_begining_of_line();
+        } else {
+            self.terminal.goto_next_line()?;
         }
         self.buffer.clear();
-        self.next_line()?;
+        print!("{}", self.prompt);
 
         Ok(())
     }
