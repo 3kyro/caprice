@@ -19,7 +19,7 @@ impl Parser {
     pub fn new(functor: fn(String) -> Result<()>) -> Self {
         Parser {
             terminal: TerminalManipulator::new(),
-            functor: functor,
+            functor,
             buffer: String::new(),
             tokens: vec![
                 "some_token".to_owned(),

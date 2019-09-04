@@ -68,7 +68,7 @@ pub(crate) fn autocomplete<'a>(
     similar = keywords
         .iter()
         .filter(|x| x.starts_with(word))
-        .map(|x| x.clone())
+        .cloned()
         .collect();
 
     (

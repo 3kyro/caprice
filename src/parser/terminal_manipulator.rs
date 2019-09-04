@@ -33,7 +33,7 @@ impl TerminalManipulator {
 
     pub(super) fn goto_next_line(&self) -> Result<()> {
         self.clear_from_cursor()?;
-        print!("\r\n");
+        println!("\r");
         Ok(())
     }
 
