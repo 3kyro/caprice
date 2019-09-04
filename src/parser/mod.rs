@@ -86,15 +86,15 @@ impl Parser {
         } else 
         if self.commands.contains(&self.buffer) {
             self.parse_command(&self.buffer.clone())?;
-        } else {
-            self.buffer.clear();
-        }   
+        } 
+        self.buffer.clear();
         self.next_line()?;
+
         Ok(())
     }
 
-    fn next_line(&self) -> Result<()> {
-        self.terminal.goto_next_line()?;
+    fn next_line(&mut self) -> Result<()> {
+        self.terminal.goto_begining_of_line();
         print!("{}", self.prompt);
 
         Ok(())
@@ -121,7 +121,6 @@ impl Parser {
             print!("{}", c);
 
             self.print_autocompleted()?
-
         }
 
         Ok(())
@@ -133,7 +132,6 @@ impl Parser {
         print!("{}", self.prompt);
 
         Ok(())
-        
     }   
 
     fn print_autocompleted(&self) -> Result<()> {
