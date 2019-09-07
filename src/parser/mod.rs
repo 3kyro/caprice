@@ -11,6 +11,7 @@ pub struct Parser {
     tokens: Vec<String>,
     commands: Vec<String>,
     prompt: String,
+    autocompleted: Autocomplete,
 }
 
 type Result<T> = std::result::Result<T, std::io::Error>;
@@ -24,10 +25,26 @@ impl Parser {
             tokens: vec![
                 "some_token".to_owned(),
                 "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
                 "none".to_owned(),
             ],
             commands: vec!["#list".to_owned()],
             prompt: "~".to_owned(),
+            autocompleted: Autocomplete::new(),
+
         }
     }
 
@@ -78,8 +95,41 @@ impl Parser {
         Ok(())
     }
 
-    fn parse_tab(&self) -> Result<()> {
-        unimplemented!()
+    fn parse_tab(&mut self) -> Result<()> {
+        //
+        self.autocompleted.autocomplete(&self.buffer, &self.tokens);
+
+        if self.autocompleted.get_common().len() == 0 {
+            return Ok(());
+        }
+        
+        self.terminal.goto_begining_of_line();
+        self.buffer = self.autocompleted.get_common().clone();
+        print!("{}{}",self.prompt, self.buffer);
+
+        self.autocompleted.amortisize();
+
+        self.terminal.save_cursor()?;
+        self.terminal.goto_next_line()?;
+        // get num of words that fit in one line
+        let num_per_line;
+        if let Some(first) = self.autocompleted.get_keywords().get(0) {
+            num_per_line = self.terminal.size().0 / (first.len() as u16 + 2) // +2 for the number of spaces seperating each word
+        } else {
+            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Inalid autocompleted result"));
+        }
+
+
+
+        for word in self.autocompleted.get_keywords() {
+            for _ in 0..num_per_line {
+                print!("{}  ", word);
+            }
+            self.terminal.goto_next_line()?;
+        }
+        self.terminal.restore_cursor()?;
+    
+        Ok(())
     }
 
     fn parse_enter(&mut self) -> Result<()> {
@@ -139,14 +189,14 @@ impl Parser {
         Ok(())
     }
 
-    fn print_autocompleted(&self) -> Result<()> {
+    fn print_autocompleted(&mut self) -> Result<()> {
         // get autocomplete results
-        let (_, common) = autocomplete(&self.buffer, &self.tokens);
+        self.autocompleted.autocomplete(&self.buffer, &self.tokens);
 
-        if let Some(result) = common {
+        if !self.autocompleted.get_common().is_empty() {
             self.terminal.save_cursor()?;
 
-            print_same_line_autocompleted(result, &self.buffer);
+            print_same_line_autocompleted(self.autocompleted.get_common().to_owned(), &self.buffer);
 
             self.terminal.restore_cursor()?;
         } else {

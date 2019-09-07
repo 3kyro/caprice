@@ -81,111 +81,113 @@ impl Flags {
         let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
 
         if let Some(key_event) = self.stdin.next() {
-            match key_event {
-                InputEvent::Keyboard(KeyEvent::Char(c)) => {
-                    match c {
-                        '\t' => {
-                            // exit in the rare case where the terminal has 0 width
-                            if self.terminal.terminal_size().0 == 0 {
-                                RawScreen::disable_raw_mode()?;
-                                exit(exitcode::IOERR);
-                            }
+            unimplemented!();
+            
+            // match key_event {
+            //     InputEvent::Keyboard(KeyEvent::Char(c)) => {
+            //         match c {
+            //             '\t' => {
+            //                 // exit in the rare case where the terminal has 0 width
+            //                 if self.terminal.terminal_size().0 == 0 {
+            //                     RawScreen::disable_raw_mode()?;
+            //                     exit(exitcode::IOERR);
+            //                 }
 
-                            // get autocomplete results
-                            let (mut similar, common) = autocomplete(&trimmed, &tokens);
+            //                 // get autocomplete results
+            //                 let (mut similar, common) = autocomplete(&trimmed, &tokens);
 
-                            // if there is a common str, print it
-                            if let Some(common) = common {
-                                self.cursor.move_left(self.cursor.pos().0);
-                                print!("{}{}", self.prompt, common);
-                                self.keyword = common.to_owned().to_string();
-                            }
+            //                 // if there is a common str, print it
+            //                 if let Some(common) = common {
+            //                     self.cursor.move_left(self.cursor.pos().0);
+            //                     print!("{}{}", self.prompt, common);
+            //                     self.keyword = common.to_owned().to_string();
+            //                 }
 
-                            // if there are more than one keywords, print them at the bottom of the current line
-                            if similar.len() > 1 {
-                                Autocomplete::get_amortisized_array(&mut similar);
+            //                 // if there are more than one keywords, print them at the bottom of the current line
+            //                 if similar.len() > 1 {
+            //                     Autocomplete::get_amortisized_array(&mut similar);
 
-                                // give some space for an extra line
-                                if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
-                                    self.terminal.scroll_up(1)?;
-                                    self.cursor.move_up(1);
-                                }
+            //                     // give some space for an extra line
+            //                     if self.cursor.pos().1 == self.terminal.terminal_size().1 - 1 {
+            //                         self.terminal.scroll_up(1)?;
+            //                         self.cursor.move_up(1);
+            //                     }
 
-                                // save self.cursor position
-                                self.cursor.save_position()?;
+            //                     // save self.cursor position
+            //                     self.cursor.save_position()?;
 
-                                // goto next line
-                                self.cursor.goto(0, self.cursor.pos().1 + 1)?;
+            //                     // goto next line
+            //                     self.cursor.goto(0, self.cursor.pos().1 + 1)?;
 
-                                // print all the similar keywords
-                                for word in similar {
-                                    print!("{}{} ", Colored::Fg(Color::Green), word);
-                                }
+            //                     // print all the similar keywords
+            //                     for word in similar {
+            //                         print!("{}{} ", Colored::Fg(Color::Green), word);
+            //                     }
 
-                                // erase all after self.cursor
-                                self.terminal.clear(ClearType::UntilNewLine)?;
+            //                     // erase all after self.cursor
+            //                     self.terminal.clear(ClearType::UntilNewLine)?;
 
-                                // reset position
-                                self.cursor.reset_position()?;
-                            } else {
-                                self.terminal.clear(ClearType::FromCursorDown)?;
-                            }
-                        }
-                        // enter
-                        '\r' | '\n' => {
-                            // go to next line
-                            self.terminal.clear(ClearType::UntilNewLine)?;
-                            self.terminal.clear(ClearType::FromCursorDown)?;
-                            print!("\r\n");
+            //                     // reset position
+            //                     self.cursor.reset_position()?;
+            //                 } else {
+            //                     self.terminal.clear(ClearType::FromCursorDown)?;
+            //                 }
+            //             }
+            //             // enter
+            //             '\r' | '\n' => {
+            //                 // go to next line
+            //                 self.terminal.clear(ClearType::UntilNewLine)?;
+            //                 self.terminal.clear(ClearType::FromCursorDown)?;
+            //                 print!("\r\n");
 
-                            // check if keyword is part of contents
-                            if let Some(value) = self.map.get(&trimmed) {
-                                let new_value = !value;
-                                self.map.insert(trimmed.clone(), new_value);
-                                print!("{} set to {}", trimmed, new_value);
-                                println!();
-                                self.cursor.move_left(self.cursor.pos().0);
-                            } else if self.commands.iter().any(|&x| x == trimmed) {
-                                match trimmed.as_str() {
-                                    "#list" => {
-                                        for token in tokens.iter() {
-                                            println!("{}", token);
-                                            self.cursor.move_left(self.cursor.pos().0);
-                                        }
-                                    }
-                                    _ => return Ok(()),
-                                }
-                            }
+            //                 // check if keyword is part of contents
+            //                 if let Some(value) = self.map.get(&trimmed) {
+            //                     let new_value = !value;
+            //                     self.map.insert(trimmed.clone(), new_value);
+            //                     print!("{} set to {}", trimmed, new_value);
+            //                     println!();
+            //                     self.cursor.move_left(self.cursor.pos().0);
+            //                 } else if self.commands.iter().any(|&x| x == trimmed) {
+            //                     match trimmed.as_str() {
+            //                         "#list" => {
+            //                             for token in tokens.iter() {
+            //                                 println!("{}", token);
+            //                                 self.cursor.move_left(self.cursor.pos().0);
+            //                             }
+            //                         }
+            //                         _ => return Ok(()),
+            //                     }
+            //                 }
 
-                            // clear keyword
-                            self.keyword.clear();
-                            print!("{}", self.prompt);
-                        }
-                        _ => {
-                            if c.is_alphanumeric() || c == '#' || c == '_' {
-                                // insert new char to self.keyword
-                                self.keyword.push(c);
-                                let trimmed = self.keyword.trim_end();
+            //                 // clear keyword
+            //                 self.keyword.clear();
+            //                 print!("{}", self.prompt);
+            //             }
+            //             _ => {
+            //                 if c.is_alphanumeric() || c == '#' || c == '_' {
+            //                     // insert new char to self.keyword
+            //                     self.keyword.push(c);
+            //                     let trimmed = self.keyword.trim_end();
 
-                                print!("{}", c);
+            //                     print!("{}", c);
 
-                                self.print_autocompleted(trimmed.to_owned());
-                            }
-                        }
-                    }
-                }
-                InputEvent::Keyboard(KeyEvent::Backspace) => {
-                    if !self.keyword.is_empty() {
-                        self.keyword.pop();
-                        self.cursor.move_left(1);
-                        self.terminal.clear(ClearType::UntilNewLine)?;
-                    }
-                }
-                InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
-                    self.parser.parse_ctrl_c(c)?;
-                }
-                _ => {}
-            }
+            //                     self.print_autocompleted(trimmed.to_owned());
+            //                 }
+            //             }
+            //         }
+            //     }
+            //     InputEvent::Keyboard(KeyEvent::Backspace) => {
+            //         if !self.keyword.is_empty() {
+            //             self.keyword.pop();
+            //             self.cursor.move_left(1);
+            //             self.terminal.clear(ClearType::UntilNewLine)?;
+            //         }
+            //     }
+            //     InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
+            //         self.parser.parse_ctrl_c(c)?;
+            //     }
+            //     _ => {}
+            // }
         }
 
         Ok(())
@@ -200,32 +202,33 @@ impl Flags {
 
     /// Prints autocompleted results to the terminal
     fn print_autocompleted(&self, trimmed: String) {
-        // get autocomplete results
-        let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
-        let (_, common) = autocomplete(&trimmed.clone(), &tokens);
+        unimplemented!()
+    //     // get autocomplete results
+    //     let tokens: Vec<String> = self.map.keys().map(|x| x.clone()).collect();
+    //     let (_, common) = autocomplete(&trimmed.clone(), &tokens);
 
-        if let Some(result) = common {
-            // save current position so we can return
-            self.cursor.save_position().unwrap();
+    //     if let Some(result) = common {
+    //         // save current position so we can return
+    //         self.cursor.save_position().unwrap();
 
-            // print in grey the autocompleted part
-            print!(
-                "{}{}",
-                Colored::Fg(Color::Rgb {
-                    r: 125,
-                    g: 125,
-                    b: 125
-                }),
-                result.split_at(trimmed.len()).1
-            );
+    //         // print in grey the autocompleted part
+    //         print!(
+    //             "{}{}",
+    //             Colored::Fg(Color::Rgb {
+    //                 r: 125,
+    //                 g: 125,
+    //                 b: 125
+    //             }),
+    //             result.split_at(trimmed.len()).1
+    //         );
 
-            // return the self.cursor for the next loop
-            self.cursor.reset_position().unwrap();
-        } else {
-            // clear everything left of the self.cursor
-            self.terminal.clear(ClearType::UntilNewLine).unwrap();
-            self.terminal.clear(ClearType::FromCursorDown).unwrap();
-        }
+    //         // return the self.cursor for the next loop
+    //         self.cursor.reset_position().unwrap();
+    //     } else {
+    //         // clear everything left of the self.cursor
+    //         self.terminal.clear(ClearType::UntilNewLine).unwrap();
+    //         self.terminal.clear(ClearType::FromCursorDown).unwrap();
+    //     }
     }
 }
 

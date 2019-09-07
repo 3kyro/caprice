@@ -11,7 +11,46 @@ by pressing tab you just change the bg color of one of the items in the list
 
 use crossterm::{Attribute, Color, Colored};
 
-pub(crate) struct Autocomplete {}
+pub(crate) struct Autocomplete {
+    keywords: Vec<String>,
+    common: String,
+    tabed: bool,
+}
+
+impl Autocomplete {
+
+    pub fn new() -> Self {
+        Autocomplete {
+            keywords: Vec::new(),
+            common: String::new(),
+            tabed: false,
+        }
+    }
+    pub(crate) fn set(&mut self, keywords: Vec<String>, common: String) {
+        self.keywords = keywords;
+        self.common = common;
+    }
+
+    pub(crate) fn get_common(&self) -> &String {
+        &self.common
+    }
+
+    pub(crate) fn get_keywords(&self) -> &Vec<String> {
+        &self.keywords
+    }
+
+    pub(crate) fn amortisize(&mut self) {
+        // get the length of the biggest word in similar
+        if let Some(max_len) = self.keywords.iter().map(|x| x.len()).max() {
+            for word in self.keywords.iter_mut() {
+                for _ in 0..max_len - word.len() {
+                    word.push(' ');
+                }
+            }
+        }
+    }
+
+}
 
 impl<'a> Autocomplete {
     /// Amortisizes the input vector by returnig an array in which all elements
@@ -27,6 +66,37 @@ impl<'a> Autocomplete {
         }
 
         vector
+    }
+
+    // takes a word and a slice of keywords and returns the sub set of the collection that starts
+    // with the word and the biggest common starting str of this collection (or None if this doesn't exist)
+    // UPDATE!!!!!!!
+    pub(crate) fn autocomplete(
+        &mut self,
+        word: &'a String,
+        keywords: &'a Vec<String>,
+    )  {
+        let mut similar: Vec<String>;
+
+        // do not return anything until word is atleast one char long
+        if word.is_empty() {
+            self.keywords = Vec::with_capacity(0);
+            self.common = String::new();
+            return;
+        }
+
+        similar = keywords
+            .iter()
+            .filter(|x| x.starts_with(word))
+            .cloned()
+            .collect();
+    
+        self.keywords = similar.clone();
+        self.common = if let Some(common) = return_common_str_from_sorted_collection(&mut similar) {
+            common
+        } else {
+            String::new()
+        };
     }
 }
 
@@ -52,30 +122,7 @@ fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Opt
     None
 }
 
-// takes a word and a slice of keywords and returns the sub set of the collection that starts
-// with the word and the biggest common starting str of this collection (or None if this doesn't exist)
-pub(crate) fn autocomplete<'a>(
-    word: &'a String,
-    keywords: &'a Vec<String>,
-) -> (Vec<String>, Option<String>) {
-    let mut similar: Vec<String>;
 
-    // do not return anything until word is atleast one char long
-    if word.is_empty() {
-        return (Vec::with_capacity(0), None);
-    }
-
-    similar = keywords
-        .iter()
-        .filter(|x| x.starts_with(word))
-        .cloned()
-        .collect();
-
-    (
-        similar.clone(),
-        return_common_str_from_sorted_collection(&mut similar),
-    )
-}
 
 pub(crate) fn print_same_line_autocompleted(result: String, buffer: &str) {
     // print in grey the autocompleted part
@@ -90,7 +137,7 @@ pub(crate) fn print_same_line_autocompleted(result: String, buffer: &str) {
         Attribute::Reset
     );
 }
-
+/*
 mod tests {
 
     #[cfg(test)]
@@ -226,3 +273,4 @@ mod tests {
         assert_eq!(Autocomplete::get_amortisized_array(&mut vec), &return_vec);
     }
 }
+*/

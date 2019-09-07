@@ -73,4 +73,8 @@ impl TerminalManipulator {
     pub(crate) fn goto_begining_of_line(&mut self) {
         self.cursor.move_left(self.cursor.pos().0);
     }
+
+    pub(crate) fn size(&self) -> (u16, u16) {
+        self.terminal.terminal_size()
+    }
 }
