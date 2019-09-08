@@ -4,7 +4,7 @@ use super::autocomplete::*;
 use crossterm::{InputEvent, KeyEvent, Attribute};
 use terminal_manipulator::*;
 
-pub struct Parser {
+pub struct Caprice {
     terminal: TerminalManipulator,
     functor: fn(String) -> Result<()>,
     buffer: String,
@@ -16,9 +16,9 @@ pub struct Parser {
 
 type Result<T> = std::result::Result<T, std::io::Error>;
 
-impl Parser {
+impl Caprice {
     pub fn new(functor: fn(String) -> Result<()>) -> Self {
-        Parser {
+        Caprice {
             terminal: TerminalManipulator::new(),
             functor,
             buffer: String::new(),
@@ -225,7 +225,7 @@ impl Parser {
     }
 }
 
-impl Drop for Parser {
+impl Drop for Caprice {
     fn drop(&mut self) {
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();

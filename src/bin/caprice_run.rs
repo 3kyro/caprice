@@ -1,11 +1,11 @@
-use caprice::parser::*;
+use caprice::Caprice;
 
 fn main() {
-    let mut parser = Parser::new(functor);
+    let mut caprice = Caprice::new(functor);
 
-    parser.init().unwrap();
+    caprice.init().unwrap();
     loop {
-        parser.parse().unwrap();
+        caprice.parse().unwrap();
     }
 }
 
