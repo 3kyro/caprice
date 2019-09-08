@@ -116,7 +116,7 @@ pub(crate) fn print_same_line_autocompleted(result: String, buffer: &str) {
         Attribute::Reset
     );
 }
-/*
+
 mod tests {
 
     #[cfg(test)]
@@ -132,15 +132,23 @@ mod tests {
             "this".to_owned(),
             "test".to_owned(),
         ];
-        assert_eq!(autocomplete(&word, &keywords), (Vec::new(), None));
+        let mut autocompleted = Autocomplete::new();
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
+        assert_eq!(autocompleted.get_common(), &String::new());
+
 
         let word = "random_word".to_owned();
         let keywords: Vec<String> = Vec::new();
-        assert_eq!(autocomplete(&word, &keywords), ((Vec::new(), None)));
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
+        assert_eq!(autocompleted.get_common(), &String::new());
 
         let word = "".to_owned();
         let keywords: Vec<String> = Vec::new();
-        assert_eq!(autocomplete(&word, &keywords), ((Vec::new(), None)));
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
+        assert_eq!(autocompleted.get_common(), &String::new());
     }
 
     #[test]
@@ -154,7 +162,11 @@ mod tests {
             "this".to_owned(),
             "test".to_owned(),
         ];
-        assert_eq!(autocomplete(&word, &keywords), (Vec::new(), None));
+        let mut autocompleted = Autocomplete::new();
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
+        assert_eq!(autocompleted.get_common(), &String::new());
+        
 
         // returns correclty full sets with full word
         let word = "some_word".to_owned();
@@ -165,19 +177,17 @@ mod tests {
             "some_word".to_owned(),
             "some_word".to_owned(),
         ];
-        assert_eq!(
-            autocomplete(&word, &keywords),
-            (
-                vec![
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned()
-                ],
-                Some("some_word".to_owned())
-            )
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), 
+            &vec![
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned()
+            ]
         );
+        assert_eq!(autocompleted.get_common(),&"some_word".to_owned());
 
         // returns correclty full sets with one or more char
         let word = "s".to_owned();
@@ -188,19 +198,17 @@ mod tests {
             "some_word".to_owned(),
             "some_word".to_owned(),
         ];
-        assert_eq!(
-            autocomplete(&word, &keywords),
-            (
-                vec![
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned(),
-                    "some_word".to_owned()
-                ],
-                Some("some_word".to_owned())
-            )
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), 
+            &vec![
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned(),
+                "some_word".to_owned()
+            ]
         );
+        assert_eq!(autocompleted.get_common(),&"some_word".to_owned());
 
         // returns correclty sets
         let word = "s".to_owned();
@@ -209,13 +217,14 @@ mod tests {
             "some_other_word".to_owned(),
             "none".to_owned(),
         ];
-        assert_eq!(
-            autocomplete(&word, &keywords),
-            (
-                vec!["some_word".to_owned(), "some_other_word".to_owned()],
-                Some("some_".to_owned())
-            )
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), 
+            &vec![
+                "some_word".to_owned(),
+                "some_other_word".to_owned(),
+            ]
         );
+        assert_eq!(autocompleted.get_common(),&"some_".to_owned());
 
         // returns correclty sets
         let word = "some_w".to_owned();
@@ -224,32 +233,42 @@ mod tests {
             "some_other_word".to_owned(),
             "none".to_owned(),
         ];
-        assert_eq!(
-            autocomplete(&word, &keywords),
-            (vec!["some_word".to_owned()], Some("some_word".to_owned()))
+        autocompleted.autocomplete(&word, &keywords);
+        assert_eq!(autocompleted.get_keywords(), 
+            &vec![
+                "some_word".to_owned(),
+            ]
         );
+        assert_eq!(autocompleted.get_common(),&"some_word".to_owned());
     }
 
     #[test]
     fn amortised() {
         // normal consditions
-        let mut vec = vec!["a".to_owned(), "ab".to_owned(), "abc".to_owned()];
+        let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
+        let word = "_".to_owned();
+        let mut autocomplete = Autocomplete::new();
+        autocomplete.autocomplete(&word,&vec);
+        autocomplete.amortisize();  
         assert_eq!(
-            Autocomplete::get_amortisized_array(&mut vec),
-            &vec!["a  ", "ab ", "abc"]
+            autocomplete.get_keywords(),
+            &vec!["_a  ", "_ab ", "_abc"]
         );
 
         // similar length
-        let mut vec = vec!["aa".to_owned(), "bb".to_owned(), "cc".to_owned()];
+        let vec = vec!["_aa".to_owned(), "_bb".to_owned(), "_cc".to_owned()];
+        autocomplete.autocomplete(&word,&vec);
+        autocomplete.amortisize();  
         assert_eq!(
-            Autocomplete::get_amortisized_array(&mut vec),
-            &vec!["aa", "bb", "cc"]
+            autocomplete.get_keywords(),
+            &vec!["_aa", "_bb", "_cc"]
         );
 
         // empty vec
-        let mut vec = Vec::with_capacity(0);
+        let vec = Vec::with_capacity(0);
+        autocomplete.autocomplete(&word,&vec);
+        autocomplete.amortisize();  
         let return_vec: Vec<String> = Vec::with_capacity(0);
-        assert_eq!(Autocomplete::get_amortisized_array(&mut vec), &return_vec);
+        assert_eq!(autocomplete.get_keywords(), &return_vec);
     }
 }
-*/
