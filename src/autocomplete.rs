@@ -14,7 +14,6 @@ use crossterm::{Attribute, Color, Colored};
 pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
-    tabed: bool,
 }
 
 impl Autocomplete {
@@ -23,12 +22,7 @@ impl Autocomplete {
         Autocomplete {
             keywords: Vec::new(),
             common: String::new(),
-            tabed: false,
         }
-    }
-    pub(crate) fn set(&mut self, keywords: Vec<String>, common: String) {
-        self.keywords = keywords;
-        self.common = common;
     }
 
     pub(crate) fn get_common(&self) -> &String {
@@ -53,21 +47,6 @@ impl Autocomplete {
 }
 
 impl<'a> Autocomplete {
-    /// Amortisizes the input vector by returnig an array in which all elements
-    /// have the same length - that of the biggest one
-    pub(crate) fn get_amortisized_array(vector: &mut Vec<String>) -> &Vec<String> {
-        // get the length of the biggest word in similar
-        if let Some(max_len) = vector.iter().map(|x| x.len()).max() {
-            for word in vector.iter_mut() {
-                for _ in 0..max_len - word.len() {
-                    word.push(' ');
-                }
-            }
-        }
-
-        vector
-    }
-
     // takes a word and a slice of keywords and returns the sub set of the collection that starts
     // with the word and the biggest common starting str of this collection (or None if this doesn't exist)
     // UPDATE!!!!!!!

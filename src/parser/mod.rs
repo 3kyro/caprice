@@ -1,7 +1,7 @@
 mod terminal_manipulator;
 
 use super::autocomplete::*;
-use crossterm::{InputEvent, KeyEvent};
+use crossterm::{InputEvent, KeyEvent, Attribute};
 use terminal_manipulator::*;
 
 pub struct Parser {
@@ -99,7 +99,7 @@ impl Parser {
         Ok(())
     }
 
-    pub(crate) fn parse_ctrl_c(&self, c: char) -> Result<()> {
+    pub(crate) fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
         if c == 'c' {
             self.terminal.exit()?;
         }
@@ -172,13 +172,6 @@ impl Parser {
         Ok(())
     }
 
-    fn next_line(&mut self) -> Result<()> {
-        self.terminal.goto_begining_of_line();
-        print!("{}", self.prompt);
-
-        Ok(())
-    }
-
     fn parse_command(&mut self, command: &String) -> Result<()> {
         if command == "#list" {
             self.terminal.goto_next_line()?;
@@ -234,6 +227,10 @@ impl Parser {
 
 impl Drop for Parser {
     fn drop(&mut self) {
+        self.terminal.flush().unwrap();
+        self.terminal.disable_raw_screen().unwrap();
+        // reset any possible changes to the terminal's output
+        println!("{}", Attribute::Reset);
         self.terminal.exit().unwrap();
     }
 }

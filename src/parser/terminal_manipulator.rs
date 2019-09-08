@@ -56,15 +56,22 @@ impl TerminalManipulator {
         Ok(())
     }
 
+    pub(crate) fn disable_raw_screen(&self) -> Result<()> {
+        RawScreen::disable_raw_mode()?;
+
+        Ok(())
+    }
+
     pub(crate) fn flush(&mut self) -> Result<()> {
         self.stdout.flush()?;
 
         Ok(())
     }
 
-    pub(crate) fn exit(&self) -> Result<()> {
-        RawScreen::disable_raw_mode()?;
+    pub(crate) fn exit(&mut self) -> Result<()> {
+        self.stdout.flush()?;
         println!("{}", Attribute::Reset);
+        RawScreen::disable_raw_mode()?;
         self.terminal.exit();
 
         Ok(())
@@ -80,24 +87,6 @@ impl TerminalManipulator {
 
     pub(crate) fn move_cursor_up(&mut self, step: i16) {
         self.cursor.move_up(step as u16);
-    }
-
-    pub(crate) fn move_cursor_down(&mut self, step: i16) {
-        self.cursor.move_down(step as u16);
-    }
-
-    pub(crate) fn get_cursor_pos(&self) -> (u16, u16) {
-        self.cursor.pos()
-    }
-
-    pub(crate) fn scroll_down(&self, step: i16) -> Result<()> {
-        self.terminal.scroll_down(step)?;
-        Ok(())
-    }
-
-    pub(crate) fn scroll_up(&self, step: i16) -> Result<()> {
-        self.terminal.scroll_up(step)?;
-        Ok(())
     }
 
     pub(crate) fn cursor_to_last_line(&mut self) -> Result<()> {
