@@ -11,9 +11,15 @@ by pressing tab you just change the bg color of one of the items in the list
 
 use crossterm::{Attribute, Color, Colored};
 
+use crate::Result;
+use std::io::{Error, ErrorKind};
+
+
 pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
+    pub(crate) tabbed: bool,
+    tabbed_idx: usize,
 }
 
 impl Autocomplete {
@@ -22,6 +28,8 @@ impl Autocomplete {
         Autocomplete {
             keywords: Vec::new(),
             common: String::new(),
+            tabbed: false,
+            tabbed_idx: 0,
         }
     }
 
@@ -42,6 +50,24 @@ impl Autocomplete {
                 }
             }
         }
+    }
+    
+    pub(crate) fn reset_tabbed(&mut self) {
+        self.tabbed = false;
+        self.tabbed_idx = 0;
+    }
+
+    pub(crate) fn incr_idx(&mut self) -> Result<()> {
+        if self.keywords.len() > 0 {
+            self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
+            Ok(())
+        } else {
+            Err(Error::new(ErrorKind::InvalidData, "Invalid Atocomplete index"))
+        }
+    }
+
+    pub(crate) fn get_idx(&self) -> usize {
+        self.tabbed_idx
     }
 
 }
@@ -270,5 +296,30 @@ mod tests {
         autocomplete.amortisize();  
         let return_vec: Vec<String> = Vec::with_capacity(0);
         assert_eq!(autocomplete.get_keywords(), &return_vec);
+    }
+
+    #[test]
+    #[should_panic]
+    fn increment_index_emty() {
+        let mut autocomplete = Autocomplete::new();
+        // panics with empty lists
+        assert_eq!(autocomplete.incr_idx().unwrap(), ());
+    }
+
+    #[test]
+    fn increment_index_wraps_around() {
+        let mut autocomplete = Autocomplete::new();
+
+        let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
+        let word = "_".to_owned();
+        autocomplete.autocomplete(&word, &vec);
+        autocomplete.incr_idx().unwrap();
+        assert_eq!(autocomplete.get_idx(), 1);
+        autocomplete.incr_idx().unwrap();
+        assert_eq!(autocomplete.get_idx(), 2);
+        autocomplete.incr_idx().unwrap();
+        assert_eq!(autocomplete.get_idx(), 0);
+        autocomplete.incr_idx().unwrap();
+        assert_eq!(autocomplete.get_idx(), 1);
     }
 }

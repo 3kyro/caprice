@@ -1,7 +1,8 @@
 mod terminal_manipulator;
 
+use crate::Result;
 use super::autocomplete::*;
-use crossterm::{InputEvent, KeyEvent, Attribute};
+use crossterm::{InputEvent, KeyEvent, Attribute, Colored, Color};
 use terminal_manipulator::*;
 
 pub struct Caprice {
@@ -14,7 +15,6 @@ pub struct Caprice {
     autocompleted: Autocomplete,
 }
 
-type Result<T> = std::result::Result<T, std::io::Error>;
 
 impl Caprice {
     pub fn new(functor: fn(String) -> Result<()>) -> Self {
@@ -96,6 +96,7 @@ impl Caprice {
             self.terminal.cursor.move_left(1);
             self.terminal.clear_line()?;
         }
+        self.autocompleted.reset_tabbed();
         Ok(())
     }
 
@@ -103,6 +104,7 @@ impl Caprice {
         if c == 'c' {
             self.terminal.exit()?;
         }
+        self.autocompleted.reset_tabbed();
         Ok(())
     }
 
@@ -133,25 +135,62 @@ impl Caprice {
             return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid autocompleted result"));
         }
 
-        self.terminal.cursor_to_last_line()?;
+        let ydiff = (self.terminal.terminal.terminal_size().1 - self.terminal.cursor.pos().1 - 1) as i16;
+        let needed_lines = (num_per_line - word_margin) as i16 % self.autocompleted.get_keywords().len() as i16;
+        
+        if !self.autocompleted.tabbed {
+            if needed_lines >= ydiff {
+                self.terminal.terminal.scroll_up(needed_lines - ydiff)?;
+                self.terminal.cursor.move_up((needed_lines - ydiff) as u16);
+            }
+        }
 
+        if self.autocompleted.tabbed {
+            self.print_autocomplete_suggestions(num_per_line, Some(self.autocompleted.get_idx()))?;
+            self.terminal.goto_begining_of_line();
+            if let Some(keyword) = self.tokens.get(self.autocompleted.get_idx()) {
+                print!("{}{}", self.prompt, keyword);
+            }
+            self.autocompleted.incr_idx()?;
+        } else {
+            self.print_autocomplete_suggestions(num_per_line, None)?;
+        }
+
+
+        self.autocompleted.tabbed = true;
+        Ok(())
+    }
+
+    fn print_autocomplete_suggestions(&self,num_per_line: u16, idx: Option<usize>) -> Result<()> {
         self.terminal.save_cursor()?;
-        // begin from next line
         self.terminal.goto_next_line()?;
 
         let mut count: u16 = 0;
-        for (_,word) in self.autocompleted.get_keywords().iter().enumerate() {
-            print!("{}  ", word);
-            count += 1;
-            if count == num_per_line {
-                self.terminal.goto_next_line()?;
-                count = 0;
+        if let Some(idx) = idx {
+            for (i,word) in self.autocompleted.get_keywords().iter().enumerate() {
+                if i == idx {
+                    print!("{}{}  ", Colored::Bg(Color::White), word);
+                    print!("{}", Attribute::Reset);
+                } else {
+                    print!("{}  ", word);
+                }
+                count += 1;
+                if count == num_per_line {
+                    self.terminal.goto_next_line()?;
+                    count = 0;
+                }
+            }
+        } else {
+            for (_,word) in self.autocompleted.get_keywords().iter().enumerate() {
+                print!("{}  ", word);
+                count += 1;
+                if count == num_per_line {
+                    self.terminal.goto_next_line()?;
+                    count = 0;
+                }
             }
         }
         self.terminal.restore_cursor()?;
-        self.terminal.move_cursor_up(
-            (num_per_line - word_margin) as i16 % self.autocompleted.get_keywords().len() as i16
-        );
         Ok(())
     }
 
@@ -169,6 +208,7 @@ impl Caprice {
         print!("{}", self.prompt);
         self.terminal.clear_from_cursor()?;
 
+        self.autocompleted.reset_tabbed();
         Ok(())
     }
 
@@ -181,6 +221,7 @@ impl Caprice {
             }
         }
 
+        self.autocompleted.reset_tabbed();
         Ok(())
     }
 
@@ -195,6 +236,7 @@ impl Caprice {
             self.print_autocompleted()?
         }
 
+        self.autocompleted.reset_tabbed();
         Ok(())
     }
 
