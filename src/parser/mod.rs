@@ -39,6 +39,20 @@ impl Parser {
                 "some_other_token".to_owned(),
                 "some_other_token".to_owned(),
                 "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
+                "some_other_token".to_owned(),
                 "none".to_owned(),
             ],
             commands: vec!["#list".to_owned()],
@@ -54,9 +68,6 @@ impl Parser {
         if let Some(input_event) = self.terminal.next_key_event() {
             match input_event {
                 InputEvent::Keyboard(KeyEvent::Char(c)) => {
-                    // if let Some(result_string) = self.parse_char(c)? {
-                    //     (self.functor)(result_string)?;
-                    // }
                     self.parse_char(c)?
                 }
                 InputEvent::Keyboard(KeyEvent::Backspace) => {
@@ -96,39 +107,51 @@ impl Parser {
     }
 
     fn parse_tab(&mut self) -> Result<()> {
-        //
+        let word_margin = 2;
         self.autocompleted.autocomplete(&self.buffer, &self.tokens);
 
         if self.autocompleted.get_common().len() == 0 {
             return Ok(());
         }
         
+        // print common string
         self.terminal.goto_begining_of_line();
         self.buffer = self.autocompleted.get_common().clone();
         print!("{}{}",self.prompt, self.buffer);
 
+        // print other suggestions below the cursor
         self.autocompleted.amortisize();
 
-        self.terminal.save_cursor()?;
-        self.terminal.goto_next_line()?;
         // get num of words that fit in one line
         let num_per_line;
         if let Some(first) = self.autocompleted.get_keywords().get(0) {
-            num_per_line = self.terminal.size().0 / (first.len() as u16 + 2) // +2 for the number of spaces seperating each word
-        } else {
-            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Inalid autocompleted result"));
+            // +2 for the number of spaces seperating each word
+            // -2 to leave some space free at the edges of the terminam 
+            num_per_line = (self.terminal.size().0 / (first.len() as u16 + 2)) - word_margin;
+        } 
+        else {
+            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid autocompleted result"));
         }
 
+        self.terminal.cursor_to_last_line()?;
 
+        self.terminal.save_cursor()?;
+        // begin from next line
+        self.terminal.goto_next_line()?;
 
-        for word in self.autocompleted.get_keywords() {
-            for _ in 0..num_per_line {
-                print!("{}  ", word);
+        let mut count: u16 = 0;
+        for (_,word) in self.autocompleted.get_keywords().iter().enumerate() {
+            print!("{}  ", word);
+            count += 1;
+            if count == num_per_line {
+                self.terminal.goto_next_line()?;
+                count = 0;
             }
-            self.terminal.goto_next_line()?;
         }
         self.terminal.restore_cursor()?;
-    
+        self.terminal.move_cursor_up(
+            (num_per_line - word_margin) as i16 % self.autocompleted.get_keywords().len() as i16
+        );
         Ok(())
     }
 
@@ -144,6 +167,7 @@ impl Parser {
         }
         self.buffer.clear();
         print!("{}", self.prompt);
+        self.terminal.clear_from_cursor()?;
 
         Ok(())
     }

@@ -77,4 +77,39 @@ impl TerminalManipulator {
     pub(crate) fn size(&self) -> (u16, u16) {
         self.terminal.terminal_size()
     }
+
+    pub(crate) fn move_cursor_up(&mut self, step: i16) {
+        self.cursor.move_up(step as u16);
+    }
+
+    pub(crate) fn move_cursor_down(&mut self, step: i16) {
+        self.cursor.move_down(step as u16);
+    }
+
+    pub(crate) fn get_cursor_pos(&self) -> (u16, u16) {
+        self.cursor.pos()
+    }
+
+    pub(crate) fn scroll_down(&self, step: i16) -> Result<()> {
+        self.terminal.scroll_down(step)?;
+        Ok(())
+    }
+
+    pub(crate) fn scroll_up(&self, step: i16) -> Result<()> {
+        self.terminal.scroll_up(step)?;
+        Ok(())
+    }
+
+    pub(crate) fn cursor_to_last_line(&mut self) -> Result<()> {
+        let ydiff = (self.terminal.terminal_size().1 - self.cursor.pos().1 - 1) as i16;
+        if ydiff != 0 {
+            self.terminal.scroll_down(
+                (ydiff) as i16
+            )?;
+            self.cursor.move_down(ydiff as u16);
+        } 
+        Ok(())
+    }
+
+    
 }
