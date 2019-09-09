@@ -54,7 +54,11 @@ impl Autocomplete {
     
     pub(crate) fn reset_tabbed(&mut self) {
         self.tabbed = false;
-        self.tabbed_idx = 0;
+        if self.keywords.is_empty() {
+            self.tabbed_idx = 0;
+        } else {
+            self.tabbed_idx = self.keywords.len() - 1;
+        }
     }
 
     pub(crate) fn incr_idx(&mut self) -> Result<()> {
@@ -62,7 +66,7 @@ impl Autocomplete {
             self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
             Ok(())
         } else {
-            Err(Error::new(ErrorKind::InvalidData, "Invalid Atocomplete index"))
+            Err(Error::new(ErrorKind::InvalidData, "Invalid AUtocomplete index"))
         }
     }
 

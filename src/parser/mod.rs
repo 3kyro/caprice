@@ -24,35 +24,18 @@ impl Caprice {
             buffer: String::new(),
             tokens: vec![
                 "some_token".to_owned(),
+                "some_token".to_owned(),
                 "some_other_token".to_owned(),
                 "some_other_token".to_owned(),
                 "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
+                "some_third_thing".to_owned(),
+                "some_third_thing".to_owned(),
+                "some_third_thing".to_owned(),
+                "simulatred".to_owned(),
+                "simulatred".to_owned(),
+                "sunshine".to_owned(),
+                "sunshine".to_owned(),
+                "sunshine".to_owned(),
                 "none".to_owned(),
             ],
             commands: vec!["#list".to_owned()],
@@ -109,18 +92,17 @@ impl Caprice {
     }
 
     fn parse_tab(&mut self) -> Result<()> {
+
+        self.autocompleted.tabbed = true;
+
         let word_margin = 2;
         self.autocompleted.autocomplete(&self.buffer, &self.tokens);
 
         if self.autocompleted.get_common().len() == 0 {
             return Ok(());
         }
+        self.autocompleted.incr_idx()?;
         
-        // print common string
-        self.terminal.goto_begining_of_line();
-        self.buffer = self.autocompleted.get_common().clone();
-        print!("{}{}",self.prompt, self.buffer);
-
         // print other suggestions below the cursor
         self.autocompleted.amortisize();
 
@@ -136,28 +118,21 @@ impl Caprice {
         }
 
         let ydiff = (self.terminal.terminal.terminal_size().1 - self.terminal.cursor.pos().1 - 1) as i16;
-        let needed_lines = (num_per_line - word_margin) as i16 % self.autocompleted.get_keywords().len() as i16;
-        
-        if !self.autocompleted.tabbed {
-            if needed_lines >= ydiff {
-                self.terminal.terminal.scroll_up(needed_lines - ydiff)?;
-                self.terminal.cursor.move_up((needed_lines - ydiff) as u16);
-            }
-        }
+        let needed_lines =   self.autocompleted.get_keywords().len()as i16 % (num_per_line - word_margin) as i16;
 
-        if self.autocompleted.tabbed {
-            self.print_autocomplete_suggestions(num_per_line, Some(self.autocompleted.get_idx()))?;
-            self.terminal.goto_begining_of_line();
-            if let Some(keyword) = self.tokens.get(self.autocompleted.get_idx()) {
-                print!("{}{}", self.prompt, keyword);
-            }
-            self.autocompleted.incr_idx()?;
-        } else {
-            self.print_autocomplete_suggestions(num_per_line, None)?;
+        if needed_lines > ydiff {
+            self.terminal.terminal.scroll_up(needed_lines - ydiff - 1)?;
+            self.terminal.cursor.move_up((needed_lines - ydiff - 1) as u16);
         }
 
 
-        self.autocompleted.tabbed = true;
+        self.terminal.goto_begining_of_line();
+        self.print_autocomplete_suggestions(num_per_line, Some(self.autocompleted.get_idx()))?;
+        self.terminal.goto_begining_of_line();
+        if let Some(keyword) = self.autocompleted.get_keywords().get(self.autocompleted.get_idx()) {
+            print!("{} {}", self.prompt, keyword.clone().trim_end());
+        }
+
         Ok(())
     }
 
@@ -195,6 +170,11 @@ impl Caprice {
     }
 
     fn parse_enter(&mut self) -> Result<()> {
+        if self.autocompleted.tabbed {
+            if let Some(keyword) = self.autocompleted.get_keywords().get(self.autocompleted.get_idx()) {
+                self.buffer = keyword.to_owned().trim_end().to_string();
+            }
+        }
         if self.tokens.contains(&self.buffer) {
             (self.functor)(self.buffer.clone())?;
             self.terminal.goto_begining_of_line();
