@@ -74,6 +74,8 @@ impl Autocomplete {
         self.tabbed_idx
     }
 
+    
+
 }
 
 impl<'a> Autocomplete {
@@ -106,6 +108,14 @@ impl<'a> Autocomplete {
         } else {
             String::new()
         };
+    }
+
+    pub(crate) fn set_buffer(&self, buffer: &'a mut String) {
+        if self.tabbed {
+            if let Some(keyword) = self.keywords.get(self.tabbed_idx) {
+                *buffer = keyword.clone().trim_end().to_string();
+            }
+        }
     }
 }
 

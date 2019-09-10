@@ -5,8 +5,8 @@ use crossterm::{
 use std::io::{stdout, Stdout, Write};
 
 pub(super) struct TerminalManipulator {
-    pub(crate) terminal: crossterm::Terminal,
-    pub(crate) cursor: TerminalCursor,
+    terminal: crossterm::Terminal,
+    cursor: TerminalCursor,
     stdin: SyncReader,
     stdout: Stdout,
 }
@@ -83,5 +83,23 @@ impl TerminalManipulator {
 
     pub(crate) fn size(&self) -> (u16, u16) {
         self.terminal.terminal_size()
+    }
+
+    pub(crate) fn get_cursor_pos(&self) -> (u16, u16) {
+        self.cursor.pos()
+    }
+
+    pub(crate) fn scroll_up(&mut self, step: i16) -> Result<()> {
+        self.terminal.scroll_up(step)?;
+        self.cursor.move_up(step as u16);
+
+        Ok(())
+    }
+
+    pub(crate) fn backspace(&mut self) -> Result<()> {
+        self.cursor.move_left(1);
+        self.clear_line()?;
+
+        Ok(())
     }
 }

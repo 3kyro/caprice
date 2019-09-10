@@ -74,10 +74,11 @@ impl Caprice {
     }
 
     fn parse_backspace(&mut self) -> Result<()> {
+        self.autocompleted.set_buffer(&mut self.buffer);
+        
         if !self.buffer.is_empty() {
             self.buffer.pop();
-            self.terminal.cursor.move_left(1);
-            self.terminal.clear_line()?;
+            self.terminal.backspace()?;
         }
         self.autocompleted.reset_tabbed();
         Ok(())
@@ -95,7 +96,7 @@ impl Caprice {
 
         self.autocompleted.tabbed = true;
 
-        let word_margin = 2;
+        let word_margin = 1;
         self.autocompleted.autocomplete(&self.buffer, &self.tokens);
 
         if self.autocompleted.get_common().len() == 0 {
@@ -111,18 +112,19 @@ impl Caprice {
         if let Some(first) = self.autocompleted.get_keywords().get(0) {
             // +2 for the number of spaces seperating each word
             // -2 to leave some space free at the edges of the terminam 
-            num_per_line = (self.terminal.size().0 / (first.len() as u16 + 2)) - word_margin;
+            num_per_line = (self.terminal.size().0 / (first.len() as u16 + 2)) + 1 - word_margin;
         } 
         else {
             return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid autocompleted result"));
         }
 
-        let ydiff = (self.terminal.terminal.terminal_size().1 - self.terminal.cursor.pos().1 - 1) as i16;
-        let needed_lines =   self.autocompleted.get_keywords().len()as i16 % (num_per_line - word_margin) as i16;
+        
 
-        if needed_lines > ydiff {
-            self.terminal.terminal.scroll_up(needed_lines - ydiff - 1)?;
-            self.terminal.cursor.move_up((needed_lines - ydiff - 1) as u16);
+        let ydiff = (self.terminal.size().1 - self.terminal.get_cursor_pos().1 - 1) as i16;
+        let needed_lines = self.autocompleted.get_keywords().len()as i16 % (num_per_line) as i16;
+
+        if ydiff < needed_lines {
+            self.terminal.scroll_up(needed_lines - ydiff)?;
         }
 
 
@@ -170,11 +172,9 @@ impl Caprice {
     }
 
     fn parse_enter(&mut self) -> Result<()> {
-        if self.autocompleted.tabbed {
-            if let Some(keyword) = self.autocompleted.get_keywords().get(self.autocompleted.get_idx()) {
-                self.buffer = keyword.to_owned().trim_end().to_string();
-            }
-        }
+        
+        self.autocompleted.set_buffer(&mut self.buffer);
+
         if self.tokens.contains(&self.buffer) {
             (self.functor)(self.buffer.clone())?;
             self.terminal.goto_begining_of_line();
@@ -193,6 +193,9 @@ impl Caprice {
     }
 
     fn parse_command(&mut self, command: &String) -> Result<()> {
+        
+        self.autocompleted.set_buffer(&mut self.buffer);
+
         if command == "#list" {
             self.terminal.goto_next_line()?;
             for token in self.tokens.iter() {
@@ -206,6 +209,9 @@ impl Caprice {
     }
 
     fn parse_valid_char(&mut self, c: char) -> Result<()> {
+
+        self.autocompleted.set_buffer(&mut self.buffer);
+
         if c.is_alphanumeric() || c == '#' || c == '_' {
             // insert new char to self.keyword
             self.buffer.push(c);
