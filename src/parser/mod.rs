@@ -17,6 +17,8 @@ pub struct Caprice {
 
 
 impl Caprice {
+
+    /// Creates a new Caprice object
     pub fn new(functor: fn(String) -> Result<()>) -> Self {
         Caprice {
             terminal: TerminalManipulator::new(),
@@ -24,12 +26,28 @@ impl Caprice {
             buffer: String::new(),
             tokens: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
-            prompt: "~".to_owned(),
+            prompt: "➜ ".to_owned(),
             autocompleted: Autocomplete::new(),
 
         }
     }
 
+    /// Sets the current active tokens for the parser
+    /// 
+    /// # Example
+    /// ```
+    /// let mut caprice = Caprice::new(functor);
+    /// 
+    /// // set some tokens 
+    /// caprice.set(&vec![
+    ///    "some_token".to_owned(),
+    ///    "some_other_token".to_owned(),
+    ///    "none".to_owned(),
+    /// ]);
+    pub fn set_tokens(&mut self, tokens: &Vec<String>) {
+        self.tokens = tokens.clone();
+    }
+    
     pub fn parse(&mut self) -> Result<()> {
         self.terminal.flush()?;
 
@@ -50,9 +68,6 @@ impl Caprice {
         Ok(())
     }
 
-    pub fn set_tokens(&mut self, tokens: &Vec<String>) {
-        self.tokens = tokens.clone();
-    }
 
     fn parse_char(&mut self, c: char) -> Result<()> {
         match c {
@@ -246,7 +261,7 @@ impl Drop for Caprice {
     fn drop(&mut self) {
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
-        // reset any possible changes to the terminal's output
+        // reset terminal attributes
         println!("{}", Attribute::Reset);
         self.terminal.exit().unwrap();
     }
