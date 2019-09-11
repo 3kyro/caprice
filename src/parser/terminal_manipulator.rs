@@ -1,5 +1,5 @@
 use crossterm::{
-    input, Attribute, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
+    input, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
     TerminalCursor,
 };
 use std::io::{stdout, Stdout, Write};
@@ -64,15 +64,6 @@ impl TerminalManipulator {
 
     pub(crate) fn flush(&mut self) -> Result<()> {
         self.stdout.flush()?;
-
-        Ok(())
-    }
-
-    pub(crate) fn exit(&mut self) -> Result<()> {
-        self.stdout.flush()?;
-        println!("{}", Attribute::Reset);
-        RawScreen::disable_raw_mode()?;
-        self.terminal.exit();
 
         Ok(())
     }

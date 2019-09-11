@@ -19,7 +19,10 @@ fn main() {
 
     caprice.init().unwrap();
     loop {
-        caprice.parse().unwrap();
+        if let Ok(_) = caprice.parse() {}
+        else {
+            break
+        } 
     }
 }
 

@@ -4,6 +4,7 @@ use crate::Result;
 use super::autocomplete::*;
 use crossterm::{InputEvent, KeyEvent, Attribute, Colored, Color};
 use terminal_manipulator::*;
+use std::io::{Error, ErrorKind};
 
 pub struct Caprice {
     terminal: TerminalManipulator,
@@ -26,7 +27,7 @@ impl Caprice {
             buffer: String::new(),
             tokens: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
-            prompt: "➜ ".to_owned(),
+            prompt: "➜".to_owned(),
             autocompleted: Autocomplete::new(),
 
         }
@@ -47,7 +48,32 @@ impl Caprice {
     pub fn set_tokens(&mut self, tokens: &Vec<String>) {
         self.tokens = tokens.clone();
     }
+
+    /// Prepares the terminal for parsing by entering 
+    /// Raw screen mode
+    pub fn init(&mut self) -> Result<()> {
+        self.terminal.enable_raw_screen()?;
+
+        print!("{}", self.prompt);
+
+        Ok(())
+    }
     
+    /// Caprice internally is using Crossterms Rawmode for terminal manipulation.
+    /// In order for the process to exit correcktly, cleaning up all changes made
+    /// to the current terminal, a standard process::exit() procedure cannot be used.
+    /// Instead parse will return a Error::new(ErrorKind::Interrupted, "Program Exit"),
+    /// which the calling funxtion should interpret as a stop command
+    /// 
+    /// # Example
+    /// ```
+    /// loop {
+    ///     // ignoring possible token return
+    ///     if let Ok(_) = caprice.parse() {}
+    ///     else { 
+    ///         break 
+    ///     }
+    /// }
     pub fn parse(&mut self) -> Result<()> {
         self.terminal.flush()?;
 
@@ -88,10 +114,12 @@ impl Caprice {
         Ok(())
     }
 
-    pub(crate) fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
+    // Exits the program by returning a std::io::Error 
+    fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
         if c == 'c' {
-            self.terminal.exit()?;
+            return Err(Error::new(ErrorKind::Interrupted, "Program Exit")); 
         }
+
         self.autocompleted.reset_tabbed();
         Ok(())
     }
@@ -230,14 +258,6 @@ impl Caprice {
         Ok(())
     }
 
-    pub fn init(&mut self) -> Result<()> {
-        self.terminal.enable_raw_screen()?;
-
-        print!("{}", self.prompt);
-
-        Ok(())
-    }
-
     fn print_autocompleted(&mut self) -> Result<()> {
         // get autocomplete results
         self.autocompleted.autocomplete(&self.buffer, &self.tokens);
@@ -257,12 +277,13 @@ impl Caprice {
     }
 }
 
+/// Ensures the process exits gracefully, returning the terminal to its 
+/// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
         // reset terminal attributes
         println!("{}", Attribute::Reset);
-        self.terminal.exit().unwrap();
     }
 }
