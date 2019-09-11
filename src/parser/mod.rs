@@ -22,22 +22,7 @@ impl Caprice {
             terminal: TerminalManipulator::new(),
             functor,
             buffer: String::new(),
-            tokens: vec![
-                "some_token".to_owned(),
-                "some_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_other_token".to_owned(),
-                "some_third_thing".to_owned(),
-                "some_third_thing".to_owned(),
-                "some_third_thing".to_owned(),
-                "simulatred".to_owned(),
-                "simulatred".to_owned(),
-                "sunshine".to_owned(),
-                "sunshine".to_owned(),
-                "sunshine".to_owned(),
-                "none".to_owned(),
-            ],
+            tokens: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
             prompt: "~".to_owned(),
             autocompleted: Autocomplete::new(),
@@ -63,6 +48,10 @@ impl Caprice {
             }
         }
         Ok(())
+    }
+
+    pub fn set_tokens(&mut self, tokens: &Vec<String>) {
+        self.tokens = tokens.clone();
     }
 
     fn parse_char(&mut self, c: char) -> Result<()> {
