@@ -89,33 +89,34 @@ impl Caprice {
     ///         break 
     ///     }
     /// }
-    pub fn parse(&mut self) -> Result<()> {
+    pub fn parse(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
 
         if let Some(input_event) = self.terminal.next_key_event() {
             match input_event {
                 InputEvent::Keyboard(KeyEvent::Char(c)) => {
-                    self.parse_char(c)?
+                    return self.parse_char(c)
                 }
                 InputEvent::Keyboard(KeyEvent::Backspace) => {
-                    self.parse_backspace()?;
+                    self.parse_backspace()?
                 }
                 InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
                     self.parse_ctrl_c(c)?;
                 }
-                _ => {}
+                _ => { return Ok(None)}
             }
         }
-        Ok(())
+        Ok(None)
     }
 
 
-    fn parse_char(&mut self, c: char) -> Result<()> {
+    fn parse_char(&mut self, c: char) -> Result<Option<String>> {
         match c {
-            '\t' => self.parse_tab(),
-            '\r' | '\n' => self.parse_enter(),
-            _ => self.parse_valid_char(c),
-        }
+            '\t' => self.parse_tab()?,
+            '\r' | '\n' => return self.parse_enter(),
+            _ => self.parse_valid_char(c)?,
+        };
+        Ok(None)
     }
 
     fn parse_backspace(&mut self) -> Result<()> {
@@ -218,24 +219,40 @@ impl Caprice {
         Ok(())
     }
 
-    fn parse_enter(&mut self) -> Result<()> {
+    fn parse_enter(&mut self) -> Result<Option<String>> {
         
         self.autocompleted.set_buffer(&mut self.buffer);
 
         if self.tokens.contains(&self.buffer) {
+            
             (self.functor)(self.buffer.clone())?;
             self.terminal.goto_begining_of_line();
+            let rtn = self.buffer.clone();
+
+            self.reset_prompt()?;
+            
+            return Ok(Some(rtn))
+            
         } else if self.commands.contains(&self.buffer) {
             self.parse_command(&self.buffer.clone())?;
             self.terminal.goto_begining_of_line();
+            self.reset_prompt()?;
+
         } else {
             self.terminal.goto_next_line()?;
+            self.reset_prompt()?;
+
         }
+
+        Ok(None)
+    }
+
+    fn reset_prompt(&mut self) -> Result<()> {
         self.buffer.clear();
         print!("{}", self.prompt);
         self.terminal.clear_from_cursor()?;
-
         self.autocompleted.reset_tabbed();
+
         Ok(())
     }
 
