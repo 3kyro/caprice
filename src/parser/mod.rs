@@ -58,6 +58,21 @@ impl Caprice {
 
         Ok(())
     }
+
+    /// Sets the prompt displayed while the caprice parser is running
+    /// 
+    /// ## Note
+    /// This method __will not__ check for the length of the provided prompt,
+    /// nor if this prompt can be correctly displayed in all supported
+    /// terminals.
+    /// 
+    ///  # Example
+    /// ```
+    /// caprice.set_prompt("λ:");
+    /// ```
+    pub fn set_prompt(&mut self, prompt: &str) {
+        self.prompt = prompt.to_owned();
+    }
     
     /// Caprice internally is using Crossterms Rawmode for terminal manipulation.
     /// In order for the process to exit correcktly, cleaning up all changes made
