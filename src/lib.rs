@@ -18,7 +18,11 @@
 //! 
 //! // run the parser in a loop    
 //! loop {
-//!    caprice.parse().unwrap();
+//!     // ignoring possible token return
+//!     if let Ok(_) = caprice.parse() {}
+//!     else { 
+//!         break 
+//!     }
 //! }
 //! 
 //! // if the users types one of the givens tokens,
