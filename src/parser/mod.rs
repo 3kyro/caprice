@@ -131,8 +131,18 @@ impl Caprice {
     }
 
     // Returns an std::io::Error to signal user exit command 
+    // since windows handles the ctrl+c combination indepedently
+    // the exit signal will be sent with ctrl+q on windows  
     fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
-        if c == 'c' {
+        #[cfg(windows)]
+        let exit_char = 'q';
+        #[cfg(unix)]
+        let exit_char = 'c';
+        
+        if c == exit_char {
+            self.terminal.clear_from_cursor().unwrap();
+            self.terminal.flush().unwrap();
+            self.terminal.disable_raw_screen().unwrap();
             return Err(Error::new(ErrorKind::Interrupted, "Program Exit")); 
         }
 
@@ -207,7 +217,7 @@ impl Caprice {
         let mut count: u16 = 0;
         for (i,word) in self.autocompleted.get_keywords().iter().enumerate() {
             if i == idx {
-                print!("{}{}  {}", Colored::Bg(Color::White), word, Attribute::Reset);
+                print!("{}{}  {}", Colored::Bg(Color::Cyan), word, Attribute::Reset);
             } else {
                 print!("{}  ", word);
             }
@@ -315,6 +325,7 @@ impl Caprice {
 /// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
+        self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
         // reset terminal attributes

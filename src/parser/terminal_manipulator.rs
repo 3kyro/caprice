@@ -26,8 +26,8 @@ impl TerminalManipulator {
     }
 
     pub(super) fn clear_from_cursor(&self) -> Result<()> {
-        self.terminal.clear(ClearType::UntilNewLine)?;
         self.terminal.clear(ClearType::FromCursorDown)?;
+        self.terminal.clear(ClearType::UntilNewLine)?;
         Ok(())
     }
 
