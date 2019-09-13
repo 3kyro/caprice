@@ -29,7 +29,6 @@ impl Caprice {
             commands: vec!["#list".to_owned()],
             prompt: "➜".to_owned(),
             autocompleted: Autocomplete::new(),
-
         }
     }
 
@@ -37,6 +36,7 @@ impl Caprice {
     /// 
     /// # Example
     /// ```
+    /// use caprice::Caprice;
     /// let mut caprice = Caprice::new(functor);
     /// 
     /// // set some tokens 
@@ -51,8 +51,12 @@ impl Caprice {
 
     /// Prepares the terminal for parsing by entering 
     /// Raw screen mode
-    pub fn init(&mut self) -> Result<()> {
-        self.terminal.enable_raw_screen()?;
+    pub fn init(&mut self, alternate: bool) -> Result<()> {
+        if alternate {
+            self.terminal.enable_alternate_screen()?;
+        } else {
+            self.terminal.enable_raw_screen()?;
+        }
 
         print!("{}", self.prompt);
 
@@ -67,13 +71,11 @@ impl Caprice {
     /// terminals.
     /// 
     ///  # Example
-    /// ```
     /// caprice.set_prompt("λ:");
-    /// ```
     pub fn set_prompt(&mut self, prompt: &str) {
         self.prompt = prompt.to_owned();
     }
-    
+
     /// Caprice internally is using Crossterms Rawmode for terminal manipulation.
     /// In order for the process to exit correcktly, cleaning up all changes made
     /// to the current terminal, a standard process::exit() procedure cannot be used.
@@ -84,7 +86,7 @@ impl Caprice {
     /// ```
     /// loop {
     ///     // ignoring possible token return
-    ///     if let Ok(_) = caprice.parse() {}
+    ///     if let Ok(_) = caprice_instance.parse() {}
     ///     else { 
     ///         break 
     ///     }

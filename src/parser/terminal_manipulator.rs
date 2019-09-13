@@ -1,6 +1,6 @@
 use crossterm::{
     input, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
-    TerminalCursor,
+    TerminalCursor, AlternateScreen,
 };
 use std::io::{stdout, Stdout, Write};
 
@@ -9,6 +9,7 @@ pub(super) struct TerminalManipulator {
     cursor: TerminalCursor,
     stdin: SyncReader,
     stdout: Stdout,
+    screen: Option<AlternateScreen>,
 }
 
 impl TerminalManipulator {
@@ -18,6 +19,7 @@ impl TerminalManipulator {
             cursor: TerminalCursor::new(),
             stdin: input().read_sync(),
             stdout: stdout(),
+            screen: None,
         }
     }
 
@@ -53,6 +55,12 @@ impl TerminalManipulator {
         let mut screen = RawScreen::into_raw_mode()?;
         screen.disable_drop();
 
+        Ok(())
+    }
+
+    pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
+        self.screen = Some(AlternateScreen::to_alternate(true)?);
+        self.cursor.goto(0, 0)?;
         Ok(())
     }
 

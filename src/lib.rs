@@ -4,17 +4,19 @@
 //! 
 //! # Example:
 //! ```
+//! use caprice::Caprice;
 //! let mut caprice = Caprice::new(functor);
 //! 
 //! // set some tokens 
-//! caprice.set(&vec![
+//! caprice.set_tokens(&vec![
 //!    "some_token".to_owned(),
 //!    "some_other_token".to_owned(),
 //!    "none".to_owned(),
 //! ]);
 //! 
 //! // initialise caprice
-//! caprice.init().unwrap();
+//! // opting out the alternate terminal
+//! caprice.init(false).unwrap();
 //! 
 //! // run the parser in a loop    
 //! loop {

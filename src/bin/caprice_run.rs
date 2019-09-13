@@ -17,7 +17,7 @@ fn main() {
         "none".to_owned(),
     ]);
     caprice.set_prompt("λ:");
-    caprice.init().unwrap();
+    caprice.init(true).unwrap();
     loop {
         if let Ok(_) = caprice.parse() {}
         else {
