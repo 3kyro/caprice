@@ -61,12 +61,15 @@ impl Autocomplete {
         }
     }
 
+    // Increments the index pointing to the current active autocompletee suggestion
+    // wrapping around when necessary
     pub(crate) fn incr_idx(&mut self) -> Result<()> {
-        if self.keywords.len() > 0 {
+        if !self.keywords.is_empty() {
             self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
             Ok(())
         } else {
-            Err(Error::new(ErrorKind::InvalidData, "Invalid AUtocomplete index"))
+            // incr_idx should not be called when no autocomplete suggestions exist
+            Err(Error::new(ErrorKind::InvalidData, "Invalid AUtocomplete Index"))
         }
     }
 

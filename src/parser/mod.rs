@@ -109,7 +109,7 @@ impl Caprice {
         Ok(None)
     }
 
-
+    
     fn parse_char(&mut self, c: char) -> Result<Option<String>> {
         match c {
             '\t' => self.parse_tab()?,
@@ -130,54 +130,68 @@ impl Caprice {
         Ok(())
     }
 
-    // Exits the program by returning a std::io::Error 
+    // Returns an std::io::Error to signal user exit command 
     fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
         if c == 'c' {
             return Err(Error::new(ErrorKind::Interrupted, "Program Exit")); 
         }
 
+        // reset autocompleted state
         self.autocompleted.reset_tabbed();
+        
         Ok(())
     }
 
     fn parse_tab(&mut self) -> Result<()> {
-
+        // set autocompleted state
         self.autocompleted.tabbed = true;
 
+        // a margin left on the right of the terminal
         let word_margin = 1;
+        
+        // update the autocompleted state
         self.autocompleted.autocomplete(&self.buffer, &self.tokens);
 
-        if self.autocompleted.get_common().len() == 0 {
+
+        // return if there are no autocmplete suggestions
+        if self.autocompleted.get_common().is_empty() {
             return Ok(());
         }
-        self.autocompleted.incr_idx()?;
-        
-        // print other suggestions below the cursor
+
         self.autocompleted.amortisize();
 
+        self.autocompleted.incr_idx()?;
+        
+
+        let mut num_per_line: u16;
+        let word_separation: u16 = 2;
+
+
         // get num of words that fit in one line
-        let num_per_line;
         if let Some(first) = self.autocompleted.get_keywords().get(0) {
-            // +2 for the number of spaces seperating each word
-            // -2 to leave some space free at the edges of the terminam 
-            num_per_line = (self.terminal.size().0 / (first.len() as u16 + 2)) + 1 - word_margin;
+            num_per_line = self.terminal.size().0 / (first.len() as u16 + word_separation);
+            if num_per_line > word_margin {
+                num_per_line -= word_margin;
+            }
         } 
         else {
             return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid autocompleted result"));
         }
 
-        
+        // get vertical distance of current line to end of terminal
+        let ydiff = (self.terminal.size().1 - (self.terminal.get_cursor_pos().1 + 1)) as i16;
 
-        let ydiff = (self.terminal.size().1 - self.terminal.get_cursor_pos().1 - 1) as i16;
-        let needed_lines = self.autocompleted.get_keywords().len()as i16 % (num_per_line) as i16;
+        // get required number of lines to print autocomplete suggestions
+        let needed_lines = (self.autocompleted.get_keywords().len() as f32 / (num_per_line) as f32).ceil() as i16;
 
+        // if we need space to display the suggestions, scroll the terminal upwards
         if ydiff < needed_lines {
             self.terminal.scroll_up(needed_lines - ydiff)?;
         }
 
-
+        // print autocomplete suggestions
         self.terminal.goto_begining_of_line();
-        self.print_autocomplete_suggestions(num_per_line, Some(self.autocompleted.get_idx()))?;
+        self.print_autocomplete_suggestions(num_per_line, self.autocompleted.get_idx())?;
         self.terminal.goto_begining_of_line();
         if let Some(keyword) = self.autocompleted.get_keywords().get(self.autocompleted.get_idx()) {
             print!("{} {}", self.prompt, keyword.clone().trim_end());
@@ -186,33 +200,21 @@ impl Caprice {
         Ok(())
     }
 
-    fn print_autocomplete_suggestions(&self,num_per_line: u16, idx: Option<usize>) -> Result<()> {
+    fn print_autocomplete_suggestions(&self,num_per_line: u16, idx: usize) -> Result<()> {
         self.terminal.save_cursor()?;
         self.terminal.goto_next_line()?;
 
         let mut count: u16 = 0;
-        if let Some(idx) = idx {
-            for (i,word) in self.autocompleted.get_keywords().iter().enumerate() {
-                if i == idx {
-                    print!("{}{}  ", Colored::Bg(Color::White), word);
-                    print!("{}", Attribute::Reset);
-                } else {
-                    print!("{}  ", word);
-                }
-                count += 1;
-                if count == num_per_line {
-                    self.terminal.goto_next_line()?;
-                    count = 0;
-                }
-            }
-        } else {
-            for (_,word) in self.autocompleted.get_keywords().iter().enumerate() {
+        for (i,word) in self.autocompleted.get_keywords().iter().enumerate() {
+            if i == idx {
+                print!("{}{}  {}", Colored::Bg(Color::White), word, Attribute::Reset);
+            } else {
                 print!("{}  ", word);
-                count += 1;
-                if count == num_per_line {
-                    self.terminal.goto_next_line()?;
-                    count = 0;
-                }
+            }
+            count += 1;
+            if count == num_per_line {
+                self.terminal.goto_next_line()?;
+                count = 0;
             }
         }
         self.terminal.restore_cursor()?;
