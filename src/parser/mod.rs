@@ -58,7 +58,7 @@ impl Caprice {
             self.terminal.enable_raw_screen()?;
         }
 
-        print!("{}", self.prompt);
+        self.reset_prompt()?;
 
         Ok(())
     }
@@ -263,7 +263,7 @@ impl Caprice {
 
     fn reset_prompt(&mut self) -> Result<()> {
         self.buffer.clear();
-        print!("{}", self.prompt);
+        print!("{} ", self.prompt);
         self.terminal.clear_from_cursor()?;
         self.autocompleted.reset_tabbed();
 
