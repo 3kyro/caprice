@@ -6,9 +6,9 @@ use crossterm::{InputEvent, KeyEvent, Attribute, Colored, Color};
 use terminal_manipulator::*;
 use std::io::{Error, ErrorKind};
 
-pub struct Caprice {
+pub struct Caprice<'a> {
     terminal: TerminalManipulator,
-    functor: Option<fn(String) -> Result<()>>,
+    callback: Option<Box<dyn 'a + FnMut(String)>>,
     buffer: String,
     tokens: Vec<String>,
     commands: Vec<String>,
@@ -17,13 +17,16 @@ pub struct Caprice {
 }
 
 
-impl Caprice {
-
+impl<'a> Caprice<'a> {
+    
+    pub fn set_callback<CB: 'a + FnMut(String)>(&mut self, functor: CB) {
+        self.callback = Some(Box::new(functor));
+    }
     /// Creates a new Caprice object
-    pub fn new(functor: Option<fn(String) -> Result<()>>) -> Self {
+    pub fn new() -> Self {
         Caprice {
             terminal: TerminalManipulator::new(),
-            functor,
+            callback: None,
             buffer: String::new(),
             tokens: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
@@ -48,6 +51,8 @@ impl Caprice {
     pub fn set_tokens(&mut self, tokens: &Vec<String>) {
         self.tokens = tokens.clone();
     }
+
+ 
 
     /// Prepares the terminal for parsing initilaizing it either in RawMode or AlternateMode
     pub fn init(&mut self, alternate: bool) -> Result<()> {
@@ -238,8 +243,8 @@ impl Caprice {
 
         if self.tokens.contains(&self.buffer) {
 
-            if let Some(functor) = self.functor {
-                (functor)(self.buffer.clone())?;
+            if let Some(functor) = &mut self.callback {
+                (functor)(self.buffer.clone());
             }
             
             self.terminal.goto_begining_of_line();
@@ -327,7 +332,7 @@ impl Caprice {
 
 /// Ensures the process exits gracefully, returning the terminal to its 
 /// original state
-impl Drop for Caprice {
+impl<'a> Drop for Caprice<'a> {
     fn drop(&mut self) {
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();

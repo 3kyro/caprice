@@ -1,7 +1,9 @@
 use caprice::Caprice;
 
 fn main() {
-    let mut caprice = Caprice::new(Some(functor));
+    let mut caprice = Caprice::new();
+
+    caprice.set_callback(|x| println!("{}",x.len()));
 
     caprice.set_tokens(&vec![
         "some_token".to_owned(),
@@ -26,9 +28,4 @@ fn main() {
     }
 }
 
-fn functor(s: String) -> Result<(), std::io::Error> {
-    println!("{} activated", s);
-
-    Ok(())
-}
 
