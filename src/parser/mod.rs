@@ -8,7 +8,7 @@ use std::io::{Error, ErrorKind};
 
 pub struct Caprice {
     terminal: TerminalManipulator,
-    functor: fn(String) -> Result<()>,
+    functor: Option<fn(String) -> Result<()>>,
     buffer: String,
     tokens: Vec<String>,
     commands: Vec<String>,
@@ -20,7 +20,7 @@ pub struct Caprice {
 impl Caprice {
 
     /// Creates a new Caprice object
-    pub fn new(functor: fn(String) -> Result<()>) -> Self {
+    pub fn new(functor: Option<fn(String) -> Result<()>>) -> Self {
         Caprice {
             terminal: TerminalManipulator::new(),
             functor,
@@ -49,8 +49,7 @@ impl Caprice {
         self.tokens = tokens.clone();
     }
 
-    /// Prepares the terminal for parsing by entering 
-    /// Raw screen mode
+    /// Prepares the terminal for parsing initilaizing it either in RawMode or AlternateMode
     pub fn init(&mut self, alternate: bool) -> Result<()> {
         if alternate {
             self.terminal.enable_alternate_screen()?;
@@ -238,8 +237,11 @@ impl Caprice {
         self.autocompleted.set_buffer(&mut self.buffer);
 
         if self.tokens.contains(&self.buffer) {
+
+            if let Some(functor) = self.functor {
+                (functor)(self.buffer.clone())?;
+            }
             
-            (self.functor)(self.buffer.clone())?;
             self.terminal.goto_begining_of_line();
             let rtn = self.buffer.clone();
 

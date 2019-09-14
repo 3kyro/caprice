@@ -1,7 +1,7 @@
 use caprice::Caprice;
 
 fn main() {
-    let mut caprice = Caprice::new(functor);
+    let mut caprice = Caprice::new(Some(functor));
 
     caprice.set_tokens(&vec![
         "some_token".to_owned(),
