@@ -297,7 +297,7 @@ impl<'a> Caprice<'a> {
 
         self.autocompleted.set_buffer(&mut self.buffer);
 
-        if c.is_alphanumeric() || c == '#' || c == '_' {
+        if c.is_alphanumeric() || c == '#' {
             // insert new char to self.keyword
             self.buffer.push(c);
             self.buffer = self.buffer.trim_end().to_string();
