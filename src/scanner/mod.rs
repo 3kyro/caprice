@@ -6,7 +6,7 @@ pub(crate) enum TokenType {
     Continue(String),
     Tab(String),
     Exit,
-    None
+    None,
 }
 
 pub(crate) struct Scanner {
@@ -15,21 +15,17 @@ pub(crate) struct Scanner {
 
 impl Scanner {
     pub(crate) fn new() -> Self {
-        Scanner {buffer: String::new()}
+        Scanner {
+            buffer: String::new(),
+        }
     }
 
     pub(crate) fn scan(&mut self, input_event: InputEvent) -> TokenType {
         match input_event {
-            InputEvent::Keyboard(KeyEvent::Char(c)) => {
-                self.scan_char(c)
-            }
-            InputEvent::Keyboard(KeyEvent::Backspace) => {
-                self.scan_backspace()
-            }
-            InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
-                self.scan_ctrl(c)
-            }
-            _ => {TokenType::None}
+            InputEvent::Keyboard(KeyEvent::Char(c)) => self.scan_char(c),
+            InputEvent::Keyboard(KeyEvent::Backspace) => self.scan_backspace(),
+            InputEvent::Keyboard(KeyEvent::Ctrl(c)) => self.scan_ctrl(c),
+            _ => TokenType::None,
         }
     }
 
@@ -55,9 +51,9 @@ impl Scanner {
         let exit_char = 'q';
         #[cfg(unix)]
         let exit_char = 'c';
-        
+
         if c == exit_char {
-            return TokenType::Exit
+            return TokenType::Exit;
         }
         TokenType::None
     }

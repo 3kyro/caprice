@@ -3,9 +3,9 @@ use caprice::Caprice;
 fn main() {
     let mut caprice = Caprice::new();
 
-    caprice.set_callback(|x| println!("{}",x.len()));
+    caprice.set_callback(|x| println!("{}", x.len()));
 
-    caprice.set_tokens(&vec![
+    caprice.set_keywords(&vec![
         "some_token".to_owned(),
         "some_o".to_owned(),
         "some_ot".to_owned(),
@@ -21,11 +21,9 @@ fn main() {
     caprice.set_prompt("λ:");
     caprice.init(true).unwrap();
     loop {
-        if let Ok(_) = caprice.parse() {}
-        else {
-            break
-        } 
+        if caprice.parse().is_ok() {
+        } else {
+            break;
+        }
     }
 }
-
-
