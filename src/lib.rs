@@ -38,9 +38,9 @@
 
 
 mod autocomplete;
-pub mod parser;
-pub use parser::Caprice;
-
+mod scanner;
+pub mod caprice;
+pub use caprice::Caprice;
 /// Caprice uses the popular Rust type alias for Result<T, E>,
 /// where E is std::io::Error
 pub type Result<T> = std::result::Result<T, std::io::Error>;

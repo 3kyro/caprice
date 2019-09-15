@@ -1,16 +1,18 @@
 mod terminal_manipulator;
 
 use crate::Result;
+use crate::scanner::{Scanner, TokenType};
 use super::autocomplete::*;
 use crossterm::{InputEvent, KeyEvent, Attribute, Colored, Color};
 use terminal_manipulator::*;
 use std::io::{Error, ErrorKind};
 
 pub struct Caprice<'a> {
+    scanner: Scanner,
     terminal: TerminalManipulator,
     callback: Option<Box<dyn 'a + FnMut(String)>>,
     buffer: String,
-    tokens: Vec<String>,
+    keywords: Vec<String>,
     commands: Vec<String>,
     prompt: String,
     autocompleted: Autocomplete,
@@ -25,10 +27,11 @@ impl<'a> Caprice<'a> {
     /// Creates a new Caprice object
     pub fn new() -> Self {
         Caprice {
+            scanner: Scanner::new(),
             terminal: TerminalManipulator::new(),
             callback: None,
             buffer: String::new(),
-            tokens: Vec::with_capacity(0),
+            keywords: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
             prompt: "➜".to_owned(),
             autocompleted: Autocomplete::new(),
@@ -49,7 +52,7 @@ impl<'a> Caprice<'a> {
     ///    "none".to_owned(),
     /// ]);
     pub fn set_tokens(&mut self, tokens: &Vec<String>) {
-        self.tokens = tokens.clone();
+        self.keywords = tokens.clone();
     }
 
  
@@ -98,67 +101,42 @@ impl<'a> Caprice<'a> {
     pub fn parse(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
 
+
         if let Some(input_event) = self.terminal.next_key_event() {
-            match input_event {
-                InputEvent::Keyboard(KeyEvent::Char(c)) => {
-                    return self.parse_char(c)
-                }
-                InputEvent::Keyboard(KeyEvent::Backspace) => {
-                    self.parse_backspace()?
-                }
-                InputEvent::Keyboard(KeyEvent::Ctrl(c)) => {
-                    self.parse_ctrl_c(c)?;
-                }
-                _ => { return Ok(None)}
+            
+            match self.scanner.scan(input_event) {
+                TokenType::Token(token) => return self.parse_token(token),
+                TokenType::BackSpace => return self.parse_backspace(),
+                TokenType::Tab(buffer) => return self.parse_tab(buffer),
+                TokenType::Continue(buffer) => return self.parse_valid_char(buffer),
+                TokenType::Exit => return self.exit(),
+                TokenType::None => return Ok(None),
             }
         }
+
         Ok(None)
     }
 
-    
-    fn parse_char(&mut self, c: char) -> Result<Option<String>> {
-        match c {
-            '\t' => self.parse_tab()?,
-            '\r' | '\n' => return self.parse_enter(),
-            _ => self.parse_valid_char(c)?,
-        };
-        Ok(None)
-    }
-
-    fn parse_backspace(&mut self) -> Result<()> {
-        self.autocompleted.set_buffer(&mut self.buffer);
+    fn parse_backspace(&mut self) -> Result<Option<String>> {
+        // FIXME shoulf be printing the provided buffer
+        // self.autocompleted.set_buffer(&mut buffer);
         
-        if !self.buffer.is_empty() {
-            self.buffer.pop();
-            self.terminal.backspace()?;
-        }
+        self.terminal.backspace()?;
         self.autocompleted.reset_tabbed();
-        Ok(())
+        Ok(None)
     }
 
     // Returns an std::io::Error to signal user exit command 
     // since windows handles the ctrl+c combination indepedently
     // the exit signal will be sent with ctrl+q on windows  
-    fn parse_ctrl_c(&mut self, c: char) -> Result<()> {
-        #[cfg(windows)]
-        let exit_char = 'q';
-        #[cfg(unix)]
-        let exit_char = 'c';
-        
-        if c == exit_char {
-            self.terminal.clear_from_cursor().unwrap();
-            self.terminal.flush().unwrap();
-            self.terminal.disable_raw_screen().unwrap();
-            return Err(Error::new(ErrorKind::Interrupted, "Program Exit")); 
-        }
-
-        // reset autocompleted state
-        self.autocompleted.reset_tabbed();
-        
-        Ok(())
+    fn exit(&mut self) -> Result<Option<String>> {
+        self.terminal.clear_from_cursor().unwrap();
+        self.terminal.flush().unwrap();
+        self.terminal.disable_raw_screen().unwrap();
+        Err(Error::new(ErrorKind::Interrupted, "Program Exit")) 
     }
 
-    fn parse_tab(&mut self) -> Result<()> {
+    fn parse_tab(&mut self, buffer: String) -> Result<Option<String>> {
         // set autocompleted state
         self.autocompleted.tabbed = true;
 
@@ -166,12 +144,14 @@ impl<'a> Caprice<'a> {
         let word_margin = 1;
         
         // update the autocompleted state
-        self.autocompleted.autocomplete(&self.buffer, &self.tokens);
+        self.autocompleted.autocomplete(&buffer, &self.keywords);
+
+
 
 
         // return if there are no autocmplete suggestions
         if self.autocompleted.get_common().is_empty() {
-            return Ok(());
+            return Ok(None);
         }
 
         self.autocompleted.amortisize();
@@ -210,10 +190,14 @@ impl<'a> Caprice<'a> {
         self.print_autocomplete_suggestions(num_per_line, self.autocompleted.get_idx())?;
         self.terminal.goto_begining_of_line();
         if let Some(keyword) = self.autocompleted.get_keywords().get(self.autocompleted.get_idx()) {
-            print!("{} {}", self.prompt, keyword.clone().trim_end());
+            //update scanner's buffer
+            let keyword = keyword.trim_end();
+            self.scanner.update_buffer(keyword.to_owned());
+            print!("{} {}", self.prompt, keyword.clone());
         }
 
-        Ok(())
+
+        Ok(None)
     }
 
     fn print_autocomplete_suggestions(&self,num_per_line: u16, idx: usize) -> Result<()> {
@@ -237,14 +221,13 @@ impl<'a> Caprice<'a> {
         Ok(())
     }
 
-    fn parse_enter(&mut self) -> Result<Option<String>> {
-        
-        self.autocompleted.set_buffer(&mut self.buffer);
+    fn parse_token(&mut self, token: String) -> Result<Option<String>> {
+        // self.autocompleted.set_buffer(&mut self.buffer);
 
-        if self.tokens.contains(&self.buffer) {
+        if self.keywords.contains(&token) {
 
-            if let Some(functor) = &mut self.callback {
-                (functor)(self.buffer.clone());
+            if let Some(allback) = &mut self.callback {
+                (allback)(token);
             }
             
             self.terminal.goto_begining_of_line();
@@ -254,8 +237,8 @@ impl<'a> Caprice<'a> {
             
             return Ok(Some(rtn))
             
-        } else if self.commands.contains(&self.buffer) {
-            self.parse_command(&self.buffer.clone())?;
+        } else if self.commands.contains(&token) {
+            self.parse_command(token)?;
             self.terminal.goto_begining_of_line();
             self.reset_prompt()?;
 
@@ -277,13 +260,14 @@ impl<'a> Caprice<'a> {
         Ok(())
     }
 
-    fn parse_command(&mut self, command: &String) -> Result<()> {
+    fn parse_command(&mut self, command: String) -> Result<()> {
         
-        self.autocompleted.set_buffer(&mut self.buffer);
+        // CHECK_IF_NEEDED
+        // self.autocompleted.set_buffer(&mut self.buffer);
 
         if command == "#list" {
             self.terminal.goto_next_line()?;
-            for token in self.tokens.iter() {
+            for token in self.keywords.iter() {
                 println!("{}", token);
                 self.terminal.goto_begining_of_line();
             }
@@ -293,27 +277,21 @@ impl<'a> Caprice<'a> {
         Ok(())
     }
 
-    fn parse_valid_char(&mut self, c: char) -> Result<()> {
+    fn parse_valid_char(&mut self, mut buffer: String) -> Result<Option<String>> {
 
-        self.autocompleted.set_buffer(&mut self.buffer);
+        self.autocompleted.set_buffer(&mut buffer);
 
-        if c.is_alphanumeric() || c == '#' {
-            // insert new char to self.keyword
-            self.buffer.push(c);
-            self.buffer = self.buffer.trim_end().to_string();
+        print!("{}", buffer.pop().unwrap());
+        self.print_autocompleted()?;
 
-            print!("{}", c);
-
-            self.print_autocompleted()?
-        }
 
         self.autocompleted.reset_tabbed();
-        Ok(())
+        Ok(None)
     }
 
     fn print_autocompleted(&mut self) -> Result<()> {
         // get autocomplete results
-        self.autocompleted.autocomplete(&self.buffer, &self.tokens);
+        self.autocompleted.autocomplete(&self.buffer, &self.keywords);
 
         if !self.autocompleted.get_common().is_empty() {
             self.terminal.save_cursor()?;
