@@ -1,0 +1,14 @@
+[package]
+name = "shapes"
+version = "0.1.0"
+authors = ["3kyro <k.papachrisanthou@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+piston = "0.49.0"
+piston2d-graphics = "0.35.0"
+pistoncore-glutin_window = "0.63.0"
+piston2d-opengl_graphics = "0.69.0"
+caprice = { path = "../../../caprice"}
