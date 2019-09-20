@@ -3,7 +3,7 @@ use caprice::Caprice;
 fn main() {
     let mut caprice = Caprice::new();
 
-    caprice.set_callback(|x| println!("{}", x.len()));
+    // caprice.set_callback(|x| println!("{}", x.len()));
 
     caprice.set_keywords(&vec![
         "some_token".to_owned(),

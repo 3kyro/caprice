@@ -8,10 +8,10 @@ use std::io::{Error, ErrorKind};
 use terminal_manipulator::*;
 use autocomplete::*;
 
-pub struct Caprice<'a> {
+pub struct Caprice {
     scanner: Scanner,
     terminal: TerminalManipulator,
-    callback: Option<Box<dyn 'a + FnMut(String)>>,
+    // callback: Option<lalala>,
     buffer: String,
     keywords: Vec<String>,
     commands: Vec<String>,
@@ -19,16 +19,15 @@ pub struct Caprice<'a> {
     autocompleted: Autocomplete,
 }
 
-impl<'a> Caprice<'a> {
-    pub fn set_callback<CB: 'a + FnMut(String)>(&mut self, functor: CB) {
-        self.callback = Some(Box::new(functor));
-    }
+impl Caprice {
+    // pub fn set_callback(&mut self, functor: Arc<Mutex<dyn FnOnce(String)>>) {
+    //     self.callback = Some(functor);
+    // }
     /// Creates a new Caprice object
     pub fn new() -> Self {
         Caprice {
             scanner: Scanner::new(),
             terminal: TerminalManipulator::new(),
-            callback: None,
             buffer: String::new(),
             keywords: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
@@ -99,7 +98,7 @@ impl<'a> Caprice<'a> {
     pub fn parse(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
 
-
+        self.terminal.enable_raw_screen()?;
         if let Some(input_event) = self.terminal.next_key_event() {
             match self.scanner.scan(input_event) {
                 TokenType::Token(token) => return self.parse_token(token),
@@ -110,7 +109,7 @@ impl<'a> Caprice<'a> {
                 TokenType::None => return Ok(None),
             }
         }
-
+        self.terminal.disable_raw_screen()?;
         Ok(None)
     }
 
@@ -227,12 +226,14 @@ impl<'a> Caprice<'a> {
         }
 
         if self.keywords.contains(&token) {
-            if let Some(callback) = &mut self.callback {
-                (callback)(token);
-            }
+
+            // if let Some(mut callback) =  &mut self.callback {
+            //     let functor = &mut callback.lock().unwrap();
+            //     (functor)(token);
+            // }
 
             self.terminal.goto_begining_of_line();
-            let rtn = self.buffer.clone();
+            let rtn = token.clone();
 
             self.reset_prompt()?;
 
@@ -310,7 +311,7 @@ impl<'a> Caprice<'a> {
 
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state
-impl<'a> Drop for Caprice<'a> {
+impl Drop for Caprice {
     fn drop(&mut self) {
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
