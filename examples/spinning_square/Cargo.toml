@@ -1,5 +1,5 @@
 [package]
-name = "shapes"
+name = "spinning_square"
 version = "0.1.0"
 authors = ["3kyro <k.papachrisanthou@gmail.com>"]
 edition = "2018"
