@@ -1,11 +1,12 @@
 mod terminal_manipulator;
+mod autocomplete;
 
-use super::autocomplete::*;
-use crate::scanner::{Scanner, TokenType};
+use crate::caprice_scanner::{Scanner, TokenType};
 use crate::Result;
 use crossterm::{Attribute, Color, Colored};
 use std::io::{Error, ErrorKind};
 use terminal_manipulator::*;
+use autocomplete::*;
 
 pub struct Caprice<'a> {
     scanner: Scanner,
@@ -31,7 +32,7 @@ impl<'a> Caprice<'a> {
             buffer: String::new(),
             keywords: Vec::with_capacity(0),
             commands: vec!["#list".to_owned()],
-            prompt: "➜".to_owned(),
+            prompt: "!".to_owned(),
             autocompleted: Autocomplete::new(),
         }
     }
@@ -97,6 +98,7 @@ impl<'a> Caprice<'a> {
     /// }
     pub fn parse(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
+
 
         if let Some(input_event) = self.terminal.next_key_event() {
             match self.scanner.scan(input_event) {

@@ -36,9 +36,8 @@
 //! }  
 //! ```
 
-mod autocomplete;
+mod caprice_scanner;
 pub mod caprice;
-mod scanner;
 pub use caprice::Caprice;
 /// Caprice uses the popular Rust type alias for Result<T, E>,
 /// where E is std::io::Error

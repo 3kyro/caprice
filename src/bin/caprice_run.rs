@@ -18,7 +18,7 @@ fn main() {
         "some_other_token".to_owned(),
         "none".to_owned(),
     ]);
-    caprice.set_prompt("λ:");
+    caprice.set_prompt("!:");
     caprice.init(true).unwrap();
     loop {
         if caprice.parse().is_ok() {
