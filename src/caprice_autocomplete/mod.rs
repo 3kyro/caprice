@@ -1,3 +1,4 @@
+use crate::caprice_terminal::TerminalManipulator;
 use crossterm::{Attribute, Color, Colored};
 
 use crate::Result;
@@ -55,11 +56,11 @@ impl Autocomplete {
             self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
             Ok(())
         } else {
-            // incr_idx should not be called when no autocomplete suggestions exist
-            Err(Error::new(
+            Err(crossterm::ErrorKind::IoError(Error::new(
                 ErrorKind::InvalidData,
                 "Invalid AUtocomplete Index",
-            ))
+            )))
+            // incr_idx should not be called when no autocomplete suggestions exist
         }
     }
 
@@ -71,7 +72,7 @@ impl Autocomplete {
 impl<'a> Autocomplete {
     // takes a word and a slice of keywords and returns the sub set of the collection that starts
     // with the word and the biggest common starting str of this collection (or None if this doesn't exist)
-    pub(crate) fn autocomplete(&mut self, word: &'a String, keywords: &'a Vec<String>) {
+    pub(crate) fn update(&mut self, word: &'a String, keywords: &'a Vec<String>) {
         let mut similar: Vec<String>;
 
         // do not return anything until word is atleast one char long
@@ -106,6 +107,29 @@ impl<'a> Autocomplete {
             None
         }
     }
+
+    pub(crate) fn print_same_line_autocompleted(
+        &self,
+        buffer: &str,
+        terminal: &TerminalManipulator,
+    ) {
+        if !self.common.is_empty() {
+            terminal.save_cursor().unwrap();
+
+            // print in DarkGreen the autocompleted part
+            print!(
+                "{}{}{}",
+                Colored::Fg(Color::DarkGreen),
+                self.common.split_at(buffer.len()).1,
+                Attribute::Reset
+            );
+
+            terminal.restore_cursor().unwrap();
+        } else {
+            // clear everything left of the cursor
+            terminal.clear_from_cursor().unwrap();
+        }
+    }
 }
 
 // returns the common str slice of a collection of str slices
@@ -130,16 +154,6 @@ fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Opt
     None
 }
 
-pub(crate) fn print_same_line_autocompleted(result: String, buffer: &str) {
-    // print in grey the autocompleted part
-    print!(
-        "{}{}{}",
-        Colored::Fg(Color::DarkGreen),
-        result.split_at(buffer.len()).1,
-        Attribute::Reset
-    );
-}
-
 mod tests {
 
     #[cfg(test)]
@@ -156,19 +170,19 @@ mod tests {
             "test".to_owned(),
         ];
         let mut autocompleted = Autocomplete::new();
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
         assert_eq!(autocompleted.get_common(), &String::new());
 
         let word = "random_word".to_owned();
         let keywords: Vec<String> = Vec::new();
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
         assert_eq!(autocompleted.get_common(), &String::new());
 
         let word = "".to_owned();
         let keywords: Vec<String> = Vec::new();
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
         assert_eq!(autocompleted.get_common(), &String::new());
     }
@@ -185,7 +199,7 @@ mod tests {
             "test".to_owned(),
         ];
         let mut autocompleted = Autocomplete::new();
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
         assert_eq!(autocompleted.get_common(), &String::new());
 
@@ -198,7 +212,7 @@ mod tests {
             "some_word".to_owned(),
             "some_word".to_owned(),
         ];
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(
             autocompleted.get_keywords(),
             &vec![
@@ -220,7 +234,7 @@ mod tests {
             "some_word".to_owned(),
             "some_word".to_owned(),
         ];
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(
             autocompleted.get_keywords(),
             &vec![
@@ -240,7 +254,7 @@ mod tests {
             "some_other_word".to_owned(),
             "none".to_owned(),
         ];
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(
             autocompleted.get_keywords(),
             &vec!["some_word".to_owned(), "some_other_word".to_owned(),]
@@ -254,7 +268,7 @@ mod tests {
             "some_other_word".to_owned(),
             "none".to_owned(),
         ];
-        autocompleted.autocomplete(&word, &keywords);
+        autocompleted.update(&word, &keywords);
         assert_eq!(autocompleted.get_keywords(), &vec!["some_word".to_owned(),]);
         assert_eq!(autocompleted.get_common(), &"some_word".to_owned());
     }
@@ -265,19 +279,19 @@ mod tests {
         let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
         let word = "_".to_owned();
         let mut autocomplete = Autocomplete::new();
-        autocomplete.autocomplete(&word, &vec);
+        autocomplete.update(&word, &vec);
         autocomplete.amortisize();
         assert_eq!(autocomplete.get_keywords(), &vec!["_a  ", "_ab ", "_abc"]);
 
         // similar length
         let vec = vec!["_aa".to_owned(), "_bb".to_owned(), "_cc".to_owned()];
-        autocomplete.autocomplete(&word, &vec);
+        autocomplete.update(&word, &vec);
         autocomplete.amortisize();
         assert_eq!(autocomplete.get_keywords(), &vec!["_aa", "_bb", "_cc"]);
 
         // empty vec
         let vec = Vec::with_capacity(0);
-        autocomplete.autocomplete(&word, &vec);
+        autocomplete.update(&word, &vec);
         autocomplete.amortisize();
         let return_vec: Vec<String> = Vec::with_capacity(0);
         assert_eq!(autocomplete.get_keywords(), &return_vec);
@@ -297,7 +311,7 @@ mod tests {
 
         let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
         let word = "_".to_owned();
-        autocomplete.autocomplete(&word, &vec);
+        autocomplete.update(&word, &vec);
         autocomplete.incr_idx().unwrap();
         assert_eq!(autocomplete.get_idx(), 1);
         autocomplete.incr_idx().unwrap();

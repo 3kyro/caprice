@@ -36,9 +36,12 @@
 //! }  
 //! ```
 
-mod caprice_scanner;
 pub mod caprice;
+mod caprice_autocomplete;
+mod caprice_engine;
+mod caprice_scanner;
+mod caprice_terminal;
 pub use caprice::Caprice;
 /// Caprice uses the popular Rust type alias for Result<T, E>,
 /// where E is std::io::Error
-pub type Result<T> = std::result::Result<T, std::io::Error>;
+pub type Result<T> = std::result::Result<T, crossterm::ErrorKind>;

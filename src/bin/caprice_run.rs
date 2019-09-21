@@ -2,9 +2,10 @@ use caprice::Caprice;
 
 fn main() {
     let mut caprice = Caprice::new()
-    .set_prompt("!:")
-    .enable_alternate_screen()
-    .init();
+        .set_prompt("!:")
+        .enable_raw_screen()
+        // .enable_alternate_screen()
+        .init();
 
     // caprice.set_callback(|x| println!("{}", x.len()));
 
@@ -24,10 +25,9 @@ fn main() {
 
     loop {
         if let Ok(option) = caprice.eval() {
-            if let Some(_) = option {
-            }
+            if let Some(_) = option {}
         } else {
             break;
         }
-    } 
+    }
 }

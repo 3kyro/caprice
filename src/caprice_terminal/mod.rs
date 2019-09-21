@@ -1,15 +1,21 @@
 use crossterm::{
     input, AlternateScreen, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
-    TerminalCursor, 
+    TerminalCursor,
 };
 use std::io::{stdout, Stdout, Write};
+
+enum ScreenType {
+    RawScreenType(RawScreen),
+    AlternateScreenType(AlternateScreen),
+    DefaultScreen,
+}
 
 pub(super) struct TerminalManipulator {
     terminal: crossterm::Terminal,
     cursor: TerminalCursor,
     stdin: SyncReader,
     stdout: Stdout,
-    screen: Option<AlternateScreen>,
+    screen: ScreenType,
 }
 
 impl TerminalManipulator {
@@ -19,7 +25,7 @@ impl TerminalManipulator {
             cursor: TerminalCursor::new(),
             stdin: input().read_sync(),
             stdout: stdout(),
-            screen: None,
+            screen: ScreenType::DefaultScreen,
         }
     }
 
@@ -48,17 +54,16 @@ impl TerminalManipulator {
     }
 
     pub(super) fn restore_cursor(&self) -> Result<()> {
-        self.cursor.reset_position()
+        self.cursor.restore_position()
     }
 
-    pub(super) fn enable_raw_screen(&self) -> Result<()> {
-        let mut screen = RawScreen::into_raw_mode()?;
-        screen.disable_drop();
+    pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
+        self.screen = ScreenType::RawScreenType(RawScreen::into_raw_mode().unwrap());
         Ok(())
     }
 
     pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
-        self.screen = Some(AlternateScreen::to_alternate(true)?);
+        self.screen = ScreenType::AlternateScreenType(AlternateScreen::to_alternate(true).unwrap());
         self.cursor.goto(0, 0)?;
         Ok(())
     }
@@ -75,26 +80,34 @@ impl TerminalManipulator {
     }
 
     pub(crate) fn goto_begining_of_line(&mut self) {
-        self.cursor.move_left(self.cursor.pos().0);
+        self.cursor.move_left(self.cursor.pos().unwrap().0).unwrap();
     }
 
     pub(crate) fn size(&self) -> (u16, u16) {
-        self.terminal.terminal_size()
+        if let Ok(size) = self.terminal.size() {
+            size
+        } else {
+            (0, 0)
+        }
     }
 
     pub(crate) fn get_cursor_pos(&self) -> (u16, u16) {
-        self.cursor.pos()
+        if let Ok(pos) = self.cursor.pos() {
+            pos
+        } else {
+            (0, 0)
+        }
     }
 
-    pub(crate) fn scroll_up(&mut self, step: i16) -> Result<()> {
+    pub(crate) fn scroll_up(&mut self, step: u16) -> Result<()> {
         self.terminal.scroll_up(step)?;
-        self.cursor.move_up(step as u16);
+        self.cursor.move_up(step)?;
 
         Ok(())
     }
 
     pub(crate) fn backspace(&mut self) -> Result<()> {
-        self.cursor.move_left(1);
+        self.cursor.move_left(1)?;
         self.clear_line()?;
 
         Ok(())

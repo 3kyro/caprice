@@ -53,10 +53,9 @@ impl App {
 }
 
 fn main() {
-    let mut caprice = Caprice::new();
+    let mut caprice = Caprice::new()
+    .init();
     caprice.set_keywords(&vec!["green".to_owned(), "blue".to_owned()]);
-    caprice.set_prompt("!:");
-    caprice.init(true).unwrap();
 
     let (tx, rx) = mpsc::channel();
     let (exit_tx, exit_rx) = mpsc::channel();
@@ -70,7 +69,7 @@ fn main() {
                 break;
             }
             
-            if let Ok(option) = caprice.parse() {
+            if let Ok(option) = caprice.eval() {
                 if let Some(token) = option {
                     dbg!("token");
                     tx.send(token).unwrap();
