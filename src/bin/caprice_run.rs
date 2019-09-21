@@ -1,7 +1,10 @@
 use caprice::Caprice;
 
 fn main() {
-    let mut caprice = Caprice::new();
+    let mut caprice = Caprice::new()
+    .set_prompt("!:")
+    .enable_alternate_screen()
+    .init();
 
     // caprice.set_callback(|x| println!("{}", x.len()));
 
@@ -18,12 +21,13 @@ fn main() {
         "some_other_token".to_owned(),
         "none".to_owned(),
     ]);
-    caprice.set_prompt("!:");
-    caprice.init(true).unwrap();
+
     loop {
-        if caprice.parse().is_ok() {
+        if let Ok(option) = caprice.eval() {
+            if let Some(_) = option {
+            }
         } else {
             break;
         }
-    }
+    } 
 }

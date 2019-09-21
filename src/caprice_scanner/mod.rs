@@ -38,6 +38,7 @@ impl Scanner {
     }
 
     pub(crate) fn scan_backspace(&mut self) -> TokenType {
+        
         if !self.buffer.is_empty() {
             self.buffer.pop();
             TokenType::BackSpace

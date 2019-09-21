@@ -59,14 +59,23 @@ fn main() {
     caprice.init(true).unwrap();
 
     let (tx, rx) = mpsc::channel();
+    let (exit_tx, exit_rx) = mpsc::channel();
     
-    spawn(move || {
+    let thr = spawn(move || {
 
         loop {
+            if let Ok(true) = exit_rx.try_recv() {
+                // drop(caprice);
+                dbg!("exit");
+                break;
+            }
+            
             if let Ok(option) = caprice.parse() {
                 if let Some(token) = option {
+                    dbg!("token");
                     tx.send(token).unwrap();
                 }
+
             } else {
                 break;
             }
@@ -81,6 +90,7 @@ fn main() {
             )
             .graphics_api(opengl)
             .exit_on_esc(true)
+            .automatic_close(false)
             .build()
             .unwrap();
         let mut app = App {
@@ -105,6 +115,13 @@ fn main() {
                     }
                 };
                 app.update(&u);
+            }
+
+            if let Some(c) = e.close_args() {
+                exit_tx.send(true).unwrap();
+                // thr.join().unwrap();
+                break;
+                
             }
         }
 

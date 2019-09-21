@@ -1,6 +1,6 @@
 use crossterm::{
     input, AlternateScreen, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
-    TerminalCursor,
+    TerminalCursor, 
 };
 use std::io::{stdout, Stdout, Write};
 
@@ -54,7 +54,6 @@ impl TerminalManipulator {
     pub(super) fn enable_raw_screen(&self) -> Result<()> {
         let mut screen = RawScreen::into_raw_mode()?;
         screen.disable_drop();
-
         Ok(())
     }
 
@@ -66,7 +65,6 @@ impl TerminalManipulator {
 
     pub(crate) fn disable_raw_screen(&self) -> Result<()> {
         RawScreen::disable_raw_mode()?;
-
         Ok(())
     }
 

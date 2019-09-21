@@ -33,39 +33,31 @@ impl Caprice {
             commands: vec!["#list".to_owned()],
             prompt: "!".to_owned(),
             autocompleted: Autocomplete::new(),
-        }
+        }.enable_raw_screen()
     }
 
     /// Sets the current active keywords for the parser
     ///
-    /// # Example
-    /// ```
-    /// use caprice::Caprice;
-    /// let mut caprice = Caprice::new(functor);
-    ///
-    /// // set some tokens
-    /// caprice.set_keywords(&vec![
-    ///    "some_token".to_owned(),
-    ///    "some_other_token".to_owned(),
-    ///    "none".to_owned(),
-    /// ]);
     pub fn set_keywords(&mut self, keywords: &Vec<String>) {
         self.keywords = keywords.clone();
         self.keywords.sort();
     }
 
-    /// Prepares the terminal for parsing initilaizing it either in RawMode or AlternateMode
-    pub fn init(&mut self, alternate: bool) -> Result<()> {
-        if alternate {
-            self.terminal.enable_alternate_screen()?;
-        } else {
-            self.terminal.enable_raw_screen()?;
-        }
-
-        self.reset_prompt()?;
-
-        Ok(())
+    pub fn init(mut self) -> Self {
+        self.reset_prompt().unwrap();
+        self
     }
+
+    pub fn enable_alternate_screen(mut self) -> Self {
+        self.terminal.enable_alternate_screen().unwrap();
+        self
+    }
+
+    fn enable_raw_screen(self) -> Self {
+        self.terminal.enable_raw_screen().unwrap();
+        self
+    }
+
 
     /// Sets the prompt displayed while the caprice parser is running
     ///
@@ -74,31 +66,30 @@ impl Caprice {
     /// nor if this prompt can be correctly displayed in all supported
     /// terminals.
     ///
-    ///  # Example
-    /// caprice.set_prompt("λ:");
-    pub fn set_prompt(&mut self, prompt: &str) {
+    pub fn set_prompt(mut self, prompt: &str) -> Self{
         self.prompt = prompt.to_owned();
+        self
     }
 
     /// Caprice internally is using Crossterms Rawmode for terminal manipulation.
     /// In order for the process to exit correcktly, cleaning up all changes made
     /// to the current terminal, a standard process::exit() procedure cannot be used.
-    /// Instead parse will return a Error::new(ErrorKind::Interrupted, "Program Exit"),
+    /// Instead eval will return a Error::new(ErrorKind::Interrupted, "Program Exit"),
     /// which the calling funxtion should interpret as a stop command
     ///
     /// # Example
     /// ```
     /// loop {
     ///     // ignoring possible token return
-    ///     if let Ok(_) = caprice_instance.parse() {}
+    ///     if let Ok(_) = caprice_instance.eval() {}
     ///     else {
     ///         break
     ///     }
     /// }
-    pub fn parse(&mut self) -> Result<Option<String>> {
+    pub fn eval(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
 
-        self.terminal.enable_raw_screen()?;
+        
         if let Some(input_event) = self.terminal.next_key_event() {
             match self.scanner.scan(input_event) {
                 TokenType::Token(token) => return self.parse_token(token),
@@ -109,7 +100,7 @@ impl Caprice {
                 TokenType::None => return Ok(None),
             }
         }
-        self.terminal.disable_raw_screen()?;
+        
         Ok(None)
     }
 
@@ -227,17 +218,13 @@ impl Caprice {
 
         if self.keywords.contains(&token) {
 
-            // if let Some(mut callback) =  &mut self.callback {
-            //     let functor = &mut callback.lock().unwrap();
-            //     (functor)(token);
-            // }
-
             self.terminal.goto_begining_of_line();
             let rtn = token.clone();
 
             self.reset_prompt()?;
 
             return Ok(Some(rtn));
+            
         } else if self.commands.contains(&token) {
             self.parse_command(token)?;
             self.terminal.goto_begining_of_line();
