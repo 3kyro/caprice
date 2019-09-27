@@ -4,92 +4,92 @@
 name = "caprice"
 version = "0.1.0"
 dependencies = [
- "crossterm 0.10.1 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm 0.11.1 (git+https://github.com/TimonPost/crossterm.git)",
  "exitcode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm"
-version = "0.10.1"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.11.1"
+source = "git+https://github.com/TimonPost/crossterm.git#675c8f5e10476d806bdaa9bd01b33387068ddda8"
 dependencies = [
- "crossterm_cursor 0.2.5 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_input 0.3.8 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_screen 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_style 0.4.0 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_terminal 0.2.5 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm_cursor 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_input 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_screen 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_style 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_terminal 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_cursor"
-version = "0.2.5"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_input"
-version = "0.3.8"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_screen 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm_screen 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_screen"
-version = "0.2.4"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_style"
-version = "0.4.0"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_terminal"
-version = "0.2.5"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_cursor 0.2.5 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)",
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm_cursor 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_utils"
-version = "0.2.4"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm_winapi"
-version = "0.1.5"
-source = "git+https://github.com/TimonPost/crossterm.git#3b444d077f43de7340e2f060d820399368e6915b"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -104,7 +104,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "winapi"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -122,16 +122,16 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum crossterm 0.10.1 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_cursor 0.2.5 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_input 0.3.8 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_screen 0.2.4 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_style 0.4.0 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_terminal 0.2.5 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_utils 0.2.4 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
-"checksum crossterm_winapi 0.1.5 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
+"checksum crossterm 0.11.1 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
+"checksum crossterm_cursor 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3c0b733adeee9b605fec8b1087dc3a17c9849a16c561d5b36f459a2a55135f47"
+"checksum crossterm_input 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1fa27cd549d7967837781e2682aae1adf04c0c4e523099291ad0ffe16ed705c9"
+"checksum crossterm_screen 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b434d668812d63706c161a6a98a95a0a6cac74c61e0c8eba2716b342f83617cb"
+"checksum crossterm_style 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a2b7d1251bc400d7920f3fd981526b40bfbd3a1c86952976d8480184c5d816fb"
+"checksum crossterm_terminal 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1882bfcef878a2ef66c36d988f8c2f1ec487a62c929a66e5f9ca75c03d0c4058"
+"checksum crossterm_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f1b46df236ff59f418afe87b2f19941e050ac205f1f1aa0bdba114b820201477"
+"checksum crossterm_winapi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1521f4476da2d62ec558221bf3136d834cc08c585b1bcb2c072f89e47b27f138"
 "checksum exitcode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "de853764b47027c2e862a995c34978ffa63c1501f2e15f987ba11bd4f9bba193"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
-"checksum winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f10e386af2b13e47c89e7236a7a14a086791a2b88ebad6df9bf42040195cf770"
+"checksum winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "8093091eeb260906a183e6ae1abdba2ef5ef2257a21801128899c3fc699229c6"
 "checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"

@@ -1,5 +1,5 @@
-use caprice::Caprice;
-
+use caprice::{Caprice, CapriceCommand};
+use std::time::{Instant, Duration};
 fn main() {
     let mut caprice = Caprice::new()
         .set_prompt("!:")
@@ -23,11 +23,29 @@ fn main() {
         "none".to_owned(),
     ]);
 
+    let (tx, rx) = caprice.run();
+
+    
+
+
+    let now = Instant::now();
     loop {
-        if let Ok(option) = caprice.eval() {
-            if let Some(_) = option {}
-        } else {
-            break;
+        if let Ok(token) = rx.try_recv() {
+            println!("got {}", token);
+        }
+
+        if now.elapsed() > Duration::from_secs(5) {
+            if tx.send(CapriceCommand::Exit).is_ok() {
+                std::thread::sleep(Duration::from_secs(1));
+                println!("bye!");
+                break;
+            } else {
+                println!("you already left");
+                break;
+            }
         }
     }
+
+    
+
 }

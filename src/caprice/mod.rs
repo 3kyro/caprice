@@ -2,11 +2,19 @@ use crate::caprice_engine::Executor;
 use crate::caprice_terminal::TerminalManipulator;
 use crate::Result;
 use crossterm::Attribute;
+use std::thread;
+use std::sync::mpsc;
+use std::mem::drop;
+
+pub enum CapriceCommand {
+    Exit,
+}
 
 pub struct Caprice {
     executor: Executor,
     terminal: TerminalManipulator,
-    // callback: Option<lalala>,
+    tx_out: Option<mpsc::Sender<String>>,
+    rx_in: Option<mpsc::Receiver<CapriceCommand>>,
 }
 
 impl Caprice {
@@ -18,6 +26,8 @@ impl Caprice {
         Caprice {
             executor: Executor::new(),
             terminal: TerminalManipulator::new(),
+            tx_out: None,
+            rx_in: None, 
         }
     }
 
@@ -72,11 +82,56 @@ impl Caprice {
     pub fn eval(&mut self) -> Result<Option<String>> {
         self.executor.poll()
     }
+
+    pub fn run(mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
+
+        let (tx_stop, rx_token) = self.channels();
+
+        let tx = self.tx_out.clone().unwrap();
+
+        thread::spawn(move || {
+            loop {
+                if let Ok(option) = self.eval() {
+                    if let Some(keyword) = option {
+                        tx.send(keyword).unwrap();
+                    }
+                } else {
+                    
+                    break;
+                }
+
+                if let Some(rx) = &self.rx_in {
+                    if let Ok(command) = rx.try_recv() {
+                        match command {
+                            CapriceCommand::Exit => {
+                                drop(self);
+                                break; }
+                        }
+                    }
+                }
+            }
+
+        });
+
+        (tx_stop, rx_token)
+        
+    }
+
+    fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
+        let (tx_token, rx_token) = mpsc::channel();
+        let (tx_stop, rx_stop) = mpsc::channel();
+
+        self.tx_out = Some(tx_token);
+        self.rx_in = Some(rx_stop);
+
+        (tx_stop, rx_token)
+    }
 }
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
+        dbg!("dropping");
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
