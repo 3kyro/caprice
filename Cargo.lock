@@ -4,14 +4,14 @@
 name = "caprice"
 version = "0.1.0"
 dependencies = [
- "crossterm 0.11.1 (git+https://github.com/TimonPost/crossterm.git)",
+ "crossterm 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "exitcode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "crossterm"
 version = "0.11.1"
-source = "git+https://github.com/TimonPost/crossterm.git#675c8f5e10476d806bdaa9bd01b33387068ddda8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "crossterm_cursor 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossterm_input 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -122,7 +122,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum crossterm 0.11.1 (git+https://github.com/TimonPost/crossterm.git)" = "<none>"
+"checksum crossterm 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "57512e27b69eccc2a3068f2bc962a24186e9e6e2904538aad5885d4877f8c187"
 "checksum crossterm_cursor 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3c0b733adeee9b605fec8b1087dc3a17c9849a16c561d5b36f459a2a55135f47"
 "checksum crossterm_input 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1fa27cd549d7967837781e2682aae1adf04c0c4e523099291ad0ffe16ed705c9"
 "checksum crossterm_screen 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b434d668812d63706c161a6a98a95a0a6cac74c61e0c8eba2716b342f83617cb"
