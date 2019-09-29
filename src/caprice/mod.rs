@@ -7,6 +7,7 @@ use std::sync::mpsc;
 use std::mem::drop;
 
 pub enum CapriceCommand {
+    Println(String),
     Exit,
 }
 
@@ -103,6 +104,10 @@ impl Caprice {
                 if let Some(rx) = &self.rx_in {
                     if let Ok(command) = rx.try_recv() {
                         match command {
+                            CapriceCommand::Println(msg) => {
+                                dbg!("gere");
+                                self.executor.print_msg(msg);
+                            }
                             CapriceCommand::Exit => {
                                 drop(self);
                                 break; }
@@ -126,6 +131,7 @@ impl Caprice {
 
         (tx_stop, rx_token)
     }
+
 }
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state

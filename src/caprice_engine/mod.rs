@@ -224,4 +224,10 @@ impl Executor {
         self.autocomplete.reset_tabbed();
         Ok(None)
     }
+
+    pub fn print_msg(&self, msg: String) {
+        self.terminal.goto_next_line().unwrap();
+        print!("{}", msg);
+        self.terminal.goto_next_line().unwrap();
+    }
 }
