@@ -1,6 +1,6 @@
 use crossterm::{
     input, AlternateScreen, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
-    TerminalCursor
+    TerminalCursor,
 };
 use std::io::{stdout, Stdout, Write};
 
