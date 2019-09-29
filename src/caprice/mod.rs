@@ -2,9 +2,9 @@ use crate::caprice_engine::Executor;
 use crate::caprice_terminal::TerminalManipulator;
 use crate::Result;
 use crossterm::Attribute;
-use std::thread;
-use std::sync::mpsc;
 use std::mem::drop;
+use std::sync::mpsc;
+use std::thread;
 
 pub enum CapriceCommand {
     Println(String),
@@ -28,7 +28,7 @@ impl Caprice {
             executor: Executor::new(),
             terminal: TerminalManipulator::new(),
             tx_out: None,
-            rx_in: None, 
+            rx_in: None,
         }
     }
 
@@ -50,6 +50,11 @@ impl Caprice {
 
     pub fn enable_raw_screen(mut self) -> Self {
         self.terminal.enable_raw_screen().unwrap();
+        self
+    }
+
+    pub fn disable_ctrl_c(mut self) -> Self {
+        self.executor.scanner.enable_ctrl_c = false;
         self
     }
 
@@ -85,41 +90,36 @@ impl Caprice {
     }
 
     pub fn run(mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
-
         let (tx_stop, rx_token) = self.channels();
 
         let tx = self.tx_out.clone().unwrap();
 
-        thread::spawn(move || {
-            loop {
-                if let Ok(option) = self.eval() {
-                    if let Some(keyword) = option {
-                        tx.send(keyword).unwrap();
-                    }
-                } else {
-                    
-                    break;
+        thread::spawn(move || loop {
+            if let Ok(option) = self.eval() {
+                if let Some(keyword) = option {
+                    tx.send(keyword).unwrap();
                 }
+            } else {
+                break;
+            }
 
-                if let Some(rx) = &self.rx_in {
-                    if let Ok(command) = rx.try_recv() {
-                        match command {
-                            CapriceCommand::Println(msg) => {
-                                dbg!("gere");
-                                self.executor.print_msg(msg);
-                            }
-                            CapriceCommand::Exit => {
-                                drop(self);
-                                break; }
+            if let Some(rx) = &self.rx_in {
+                if let Ok(command) = rx.try_recv() {
+                    match command {
+                        CapriceCommand::Println(msg) => {
+                            dbg!("gere");
+                            self.executor.print_msg(msg);
+                        }
+                        CapriceCommand::Exit => {
+                            drop(self);
+                            break;
                         }
                     }
                 }
             }
-
         });
 
         (tx_stop, rx_token)
-        
     }
 
     fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
@@ -131,7 +131,6 @@ impl Caprice {
 
         (tx_stop, rx_token)
     }
-
 }
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state

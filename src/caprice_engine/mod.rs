@@ -7,7 +7,7 @@ use crossterm::{Attribute, Color, Colored};
 use std::io::{Error, ErrorKind};
 pub(crate) struct Executor {
     terminal: TerminalManipulator,
-    scanner: Scanner,
+    pub(crate) scanner: Scanner,
     autocomplete: Autocomplete,
     keywords: Vec<String>,
     commands: Vec<String>,

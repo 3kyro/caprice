@@ -11,12 +11,14 @@ pub(crate) enum TokenType {
 
 pub(crate) struct Scanner {
     buffer: String,
+    pub(crate) enable_ctrl_c: bool,
 }
 
 impl Scanner {
     pub(crate) fn new() -> Self {
         Scanner {
             buffer: String::new(),
+            enable_ctrl_c: false,
         }
     }
 
@@ -41,15 +43,16 @@ impl Scanner {
     }
 
     pub(crate) fn scan_ctrl(&mut self, c: char) -> TokenType {
-        #[cfg(windows)]
-        let exit_char = 'q';
-        #[cfg(unix)]
-        let exit_char = 'c';
-
-        if c == exit_char {
-            return TokenType::Exit;
+        // continue parsing if ctrl_C exit is disabled
+        if !self.enable_ctrl_c {
+            return TokenType::None;
         }
-        TokenType::None
+
+        if c == 'c' {
+            TokenType::Exit
+        } else {
+            TokenType::None
+        }
     }
 
     pub(crate) fn scan_tab(&mut self) -> TokenType {
