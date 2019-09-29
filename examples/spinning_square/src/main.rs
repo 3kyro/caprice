@@ -9,7 +9,7 @@ use piston::input::*;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 
-use caprice::Caprice;
+use caprice::{Caprice, CapriceCommand};
 use std::thread::spawn;
 use std::sync::mpsc;
 
@@ -54,33 +54,14 @@ impl App {
 
 fn main() {
     let mut caprice = Caprice::new()
+    .disable_ctrl_c()
     .init();
+    
     caprice.set_keywords(&vec!["green".to_owned(), "blue".to_owned()]);
 
-    let (tx, rx) = mpsc::channel();
-    let (exit_tx, exit_rx) = mpsc::channel();
-    
+    let (tx, rx) = caprice.run();
+
     let thr = spawn(move || {
-
-        loop {
-            if let Ok(true) = exit_rx.try_recv() {
-                // drop(caprice);
-                dbg!("exit");
-                break;
-            }
-            
-            if let Ok(option) = caprice.eval() {
-                if let Some(token) = option {
-                    dbg!("token");
-                    tx.send(token).unwrap();
-                }
-
-            } else {
-                break;
-            }
-            
-        }
-    });
 
     let opengl = OpenGL::V3_2;
         let mut window: Window = WindowSettings::new(
@@ -107,7 +88,7 @@ fn main() {
 
             if let Some(u) = e.update_args() {
                 if let Ok(color) = rx.try_recv() {
-                    match color.as_ref() {
+                    match color.as_str() {
                         "green" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
                         "blue" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
                         _ => {}
@@ -117,8 +98,7 @@ fn main() {
             }
 
             if let Some(c) = e.close_args() {
-                exit_tx.send(true).unwrap();
-                // thr.join().unwrap();
+                tx.send(CapriceCommand::Exit).unwrap();
                 break;
                 
             }
