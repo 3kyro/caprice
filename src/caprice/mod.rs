@@ -43,13 +43,12 @@ impl Caprice {
         self
     }
 
-    pub fn enable_alternate_screen(mut self) -> Self {
-        self.terminal.enable_alternate_screen().unwrap();
-        self
-    }
-
-    pub fn enable_raw_screen(mut self) -> Self {
-        self.terminal.enable_raw_screen().unwrap();
+    pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
+        if flag {
+            self.terminal.enable_alternate_screen().unwrap();
+        } else {
+            self.terminal.enable_raw_screen().unwrap();
+        }
         self
     }
 
