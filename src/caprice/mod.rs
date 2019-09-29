@@ -19,7 +19,7 @@ pub struct Caprice {
 }
 
 impl Caprice {
-    
+
     /// Creates a new Caprice object
     pub fn new() -> Self {
         Caprice {
@@ -131,8 +131,9 @@ impl Caprice {
         (tx_stop, rx_token)
     }
 
-    fn enable_raw_screen(self) -> Self {
-        self.terminal.enable_raw_screen().unwrap()
+    fn enable_raw_screen(mut self) -> Self {
+        self.terminal.enable_raw_screen().unwrap();
+        self
     }
 
     
