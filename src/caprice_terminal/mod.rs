@@ -1,6 +1,6 @@
 use crossterm::{
     input, AlternateScreen, ClearType, InputEvent, RawScreen, Result, SyncReader, Terminal,
-    TerminalCursor, AsyncReader
+    TerminalCursor
 };
 use std::io::{stdout, Stdout, Write};
 
@@ -13,7 +13,7 @@ enum ScreenType {
 pub(super) struct TerminalManipulator {
     terminal: crossterm::Terminal,
     cursor: TerminalCursor,
-    stdin: AsyncReader,
+    stdin: SyncReader,
     stdout: Stdout,
     screen: ScreenType,
 }
@@ -23,7 +23,7 @@ impl TerminalManipulator {
         TerminalManipulator {
             terminal: Terminal::new(),
             cursor: TerminalCursor::new(),
-            stdin: input().read_async(),
+            stdin: input().read_sync(),
             stdout: stdout(),
             screen: ScreenType::DefaultScreen,
         }
