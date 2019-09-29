@@ -131,7 +131,7 @@ impl Caprice {
         (tx_stop, rx_token)
     }
 
-    fn enable_raw_screen(mut self) -> Self {
+    pub fn enable_raw_screen(mut self) -> Self {
         self.terminal.enable_raw_screen().unwrap();
         self
     }
