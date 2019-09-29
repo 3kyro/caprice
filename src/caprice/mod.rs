@@ -19,9 +19,7 @@ pub struct Caprice {
 }
 
 impl Caprice {
-    // pub fn set_callback(&mut self, functor: Arc<Mutex<dyn FnOnce(String)>>) {
-    //     self.callback = Some(functor);
-    // }
+    
     /// Creates a new Caprice object
     pub fn new() -> Self {
         Caprice {
@@ -29,7 +27,7 @@ impl Caprice {
             terminal: TerminalManipulator::new(),
             tx_out: None,
             rx_in: None,
-        }
+        }.enable_raw_screen()
     }
 
     /// Sets the current active keywords for the parser
@@ -46,7 +44,9 @@ impl Caprice {
     pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
         if flag {
             self.terminal.enable_alternate_screen().unwrap();
-        } else {
+        } 
+        
+        else {
             self.terminal.enable_raw_screen().unwrap();
         }
         self
@@ -130,6 +130,12 @@ impl Caprice {
 
         (tx_stop, rx_token)
     }
+
+    fn enable_raw_screen(self) -> Self {
+        self.terminal.enable_raw_screen().unwrap()
+    }
+
+    
 }
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state
