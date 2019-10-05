@@ -106,7 +106,6 @@ impl Caprice {
                 if let Ok(command) = rx.try_recv() {
                     match command {
                         CapriceCommand::Println(msg) => {
-                            dbg!("gere");
                             self.executor.print_msg(msg);
                         }
                         CapriceCommand::Exit => {
@@ -142,7 +141,6 @@ impl Caprice {
 /// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
-        dbg!("dropping");
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
