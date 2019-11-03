@@ -15,7 +15,7 @@ fn main() {
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
     // to caprice
-    let (tx, rx) = caprice.run();
+    let (tx, rx, caprice_handle) = caprice.run();
     // our main application runs here
     // for this example we will simply print back
     // the tokens send by caprice
@@ -27,8 +27,8 @@ fn main() {
                 "exit" => {
                     tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
                     tx.send(CapriceCommand::Exit).unwrap();
-                    // give some time to caprice to exit
-                    thread::sleep(Duration::from_millis(30));
+                    // wait for caprice to exit
+                    caprice_handle.join().unwrap();
                     break; // caprice has already exited, let the main process do as well
                 }
                 // else send back the token to be printed

@@ -4,7 +4,7 @@ use crate::Result;
 use crossterm::style::Attribute;
 use std::mem::drop;
 use std::sync::mpsc;
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 pub enum CapriceCommand {
@@ -68,8 +68,8 @@ impl Caprice {
         self
     }
 
-    /// Caprice internally is using Crossterms Rawmode for terminal manipulation.
-    /// In order for the process to exit correcktly, cleaning up all changes made
+    /// Caprice internally is using Crossterm's Rawmode for terminal manipulation.
+    /// In order for the process to exit correctly, cleaning up all changes made
     /// to the current terminal, a standard process::exit() procedure cannot be used.
     /// Instead eval will return a Error::new(ErrorKind::Interrupted, "Program Exit"),
     /// which the calling funxtion should interpret as a stop command
@@ -87,12 +87,12 @@ impl Caprice {
         self.executor.poll()
     }
 
-    pub fn run(mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
+    pub fn run(mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>, JoinHandle<()>) {
         let (tx_stop, rx_token) = self.channels();
 
         let tx = self.tx_out.clone().unwrap();
 
-        thread::spawn(move || loop {
+        let handle = thread::spawn(move || loop {
             thread::sleep(Duration::from_millis(10));
 
             if let Ok(option) = self.eval() {
@@ -110,7 +110,7 @@ impl Caprice {
                             self.executor.print_msg(msg);
                         }
                         CapriceCommand::Exit => {
-                            drop(self);
+                            self.executor.exec_exit().unwrap();
                             break;
                         }
                     }
@@ -118,7 +118,7 @@ impl Caprice {
             }
         });
 
-        (tx_stop, rx_token)
+        (tx_stop, rx_token, handle)
     }
 
     fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
