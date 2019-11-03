@@ -51,6 +51,3 @@ mod caprice_scanner;
 mod caprice_terminal;
 pub use caprice::Caprice;
 pub use caprice::CapriceCommand;
-/// Caprice uses the popular Rust type alias for Result<T, E>,
-/// where E is std::io::Error
-pub type Result<T> = std::result::Result<T, crossterm::ErrorKind>;

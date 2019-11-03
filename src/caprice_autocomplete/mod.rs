@@ -1,9 +1,6 @@
 use crate::caprice_terminal::TerminalManipulator;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
-use crate::Result;
-use std::io::{Error, ErrorKind};
-
 pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
@@ -51,16 +48,9 @@ impl Autocomplete {
 
     // Increments the index pointing to the current active autocompletee suggestion
     // wrapping around when necessary
-    pub(crate) fn incr_idx(&mut self) -> Result<()> {
+    pub(crate) fn incr_idx(&mut self) {
         if !self.keywords.is_empty() {
             self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
-            Ok(())
-        } else {
-            Err(crossterm::ErrorKind::IoError(Error::new(
-                ErrorKind::InvalidData,
-                "Invalid AUtocomplete Index",
-            )))
-            // incr_idx should not be called when no autocomplete suggestions exist
         }
     }
 
@@ -115,7 +105,7 @@ impl<'a> Autocomplete {
         terminal: &TerminalManipulator,
     ) {
         if !self.common.is_empty() {
-            terminal.save_cursor().unwrap();
+            terminal.save_cursor();
 
             // print in DarkGreen the autocompleted part
             //
@@ -126,10 +116,10 @@ impl<'a> Autocomplete {
                 Attribute::Reset
             );
 
-            terminal.restore_cursor().unwrap();
+            terminal.restore_cursor();
         } else {
             // clear everything left of the cursor
-            terminal.clear_from_cursor().unwrap();
+            terminal.clear_from_cursor();
         }
     }
 }
@@ -304,7 +294,7 @@ mod tests {
     fn increment_index_emty() {
         let mut autocomplete = Autocomplete::new();
         // panics with empty lists
-        assert_eq!(autocomplete.incr_idx().unwrap(), ());
+        assert_eq!(autocomplete.incr_idx(), ());
     }
 
     #[test]
@@ -314,13 +304,13 @@ mod tests {
         let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
         let word = "_".to_owned();
         autocomplete.update(&word, &vec);
-        autocomplete.incr_idx().unwrap();
+        autocomplete.incr_idx();
         assert_eq!(autocomplete.get_idx(), 1);
-        autocomplete.incr_idx().unwrap();
+        autocomplete.incr_idx();
         assert_eq!(autocomplete.get_idx(), 2);
-        autocomplete.incr_idx().unwrap();
+        autocomplete.incr_idx();
         assert_eq!(autocomplete.get_idx(), 0);
-        autocomplete.incr_idx().unwrap();
+        autocomplete.incr_idx();
         assert_eq!(autocomplete.get_idx(), 1);
     }
 }

@@ -1,10 +1,8 @@
 use crate::caprice_autocomplete::Autocomplete;
 use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
-use crate::Result;
 
 use crossterm::style::{Attribute, Color, SetBackgroundColor};
-use std::io::{Error, ErrorKind};
 pub(crate) struct Executor {
     terminal: TerminalManipulator,
     pub(crate) scanner: Scanner,
@@ -26,8 +24,8 @@ impl Executor {
         }
     }
 
-    pub(crate) fn poll(&mut self) -> Result<Option<String>> {
-        self.terminal.flush()?;
+    pub(crate) fn poll(&mut self) -> Option<String> {
+        self.terminal.flush();
 
         if let Some(input_event) = self.terminal.next_key_event() {
             match self.scanner.scan(input_event) {
@@ -35,12 +33,12 @@ impl Executor {
                 TokenType::BackSpace => return self.exec_backspace(),
                 TokenType::Tab(buffer) => return self.exec_tab(buffer),
                 TokenType::Continue(buffer) => return self.exec_valid_char(buffer),
-                TokenType::Exit => return self.exec_exit(),
-                TokenType::None => return Ok(None),
+                TokenType::Exit => self.exec_exit(),
+                TokenType::None => return None,
             }
-        }
+        };
 
-        Ok(None)
+        None
     }
 
     pub(crate) fn set_keywords(&mut self, keywords: &Vec<String>) {
@@ -52,15 +50,13 @@ impl Executor {
         self.prompt = prompt.to_owned();
     }
 
-    pub(crate) fn reset_prompt(&mut self) -> Result<()> {
-        print!("{} ", self.prompt);
-        self.terminal.clear_from_cursor()?;
+    pub(crate) fn reset_prompt(&mut self) {
+        print!("{}", self.prompt);
+        self.terminal.clear_from_cursor();
         self.autocomplete.reset_tabbed();
-
-        Ok(())
     }
 
-    fn exec_token(&mut self, mut token: String) -> Result<Option<String>> {
+    fn exec_token(&mut self, mut token: String) -> Option<String> {
         // if tab suggestions are active, ignore the scanners token
         // and use the autocompleted one
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
@@ -70,28 +66,28 @@ impl Executor {
         if self.keywords.contains(&token) {
             self.terminal.goto_begining_of_line();
 
-            self.reset_prompt()?;
+            self.reset_prompt();
 
-            return Ok(Some(token));
+            return Some(token);
         } else if self.commands.contains(&token) {
-            self.exec_command(token)?;
+            self.exec_command(token);
             self.terminal.goto_begining_of_line();
-            self.reset_prompt()?;
+            self.reset_prompt();
         } else {
-            self.terminal.goto_next_line()?;
-            self.reset_prompt()?;
+            self.terminal.goto_next_line();
+            self.reset_prompt();
         }
 
-        Ok(None)
+        None
     }
 
-    fn exec_command(&mut self, command: String) -> Result<()> {
+    fn exec_command(&mut self, command: String) {
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
             self.scanner.update_buffer(buffer);
         }
 
         if command == "#list" {
-            self.terminal.goto_next_line()?;
+            self.terminal.goto_next_line();
             for token in self.keywords.iter() {
                 println!("{}", token);
                 self.terminal.goto_begining_of_line();
@@ -99,32 +95,27 @@ impl Executor {
         }
 
         self.autocomplete.reset_tabbed();
-        Ok(())
     }
 
-    pub(crate) fn exec_exit(&mut self) -> Result<Option<String>> {
-        self.terminal.clear_from_cursor().unwrap();
-        self.terminal.flush().unwrap();
-        self.terminal.disable_raw_screen().unwrap();
+    pub(crate) fn exec_exit(&mut self) {
+        self.terminal.clear_from_cursor();
+        self.terminal.flush();
+        self.terminal.disable_raw_screen();
         self.terminal.exit();
-        Err(crossterm::ErrorKind::IoError(Error::new(
-            ErrorKind::Interrupted,
-            "Program Exit",
-        )))
     }
 
-    fn exec_backspace(&mut self) -> Result<Option<String>> {
+    fn exec_backspace(&mut self) -> Option<String> {
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
             self.scanner.update_buffer(buffer);
         }
 
-        self.terminal.backspace()?;
+        self.terminal.backspace();
 
         self.autocomplete.reset_tabbed();
-        Ok(None)
+        None
     }
 
-    fn exec_tab(&mut self, buffer: String) -> Result<Option<String>> {
+    fn exec_tab(&mut self, buffer: String) -> Option<String> {
         // set autocompleted state
         self.autocomplete.tabbed = true;
 
@@ -133,15 +124,15 @@ impl Executor {
 
         // return if there are no autocomplete suggestions
         if self.autocomplete.get_common().is_empty() {
-            Ok(None)
+            None
         } else {
             // print autocomplete suggestions
-            self.print_autocomplete_suggestions()?;
-            Ok(None)
+            self.print_autocomplete_suggestions();
+            None
         }
     }
 
-    fn print_autocomplete_suggestions(&mut self) -> Result<()> {
+    fn print_autocomplete_suggestions(&mut self) {
         // a margin left on the right of the terminal
         let word_margin = 1;
         // spaces between each printed suggestion
@@ -151,7 +142,7 @@ impl Executor {
 
         self.autocomplete.amortisize();
 
-        self.autocomplete.incr_idx()?;
+        self.autocomplete.incr_idx();
 
         // get num of words that fit in one line
         if let Some(first) = self.autocomplete.get_keywords().get(0) {
@@ -160,10 +151,7 @@ impl Executor {
                 num_per_line -= word_margin;
             }
         } else {
-            return Err(crossterm::ErrorKind::IoError(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "Invalid autocompleted result",
-            )));
+            num_per_line = 0;
         }
 
         // get vertical distance of current line to end of terminal
@@ -175,12 +163,12 @@ impl Executor {
 
         // if we need space to display the suggestions, scroll the terminal up
         if distance_to_end < needed_lines {
-            self.terminal.scroll_up(needed_lines - distance_to_end)?;
+            self.terminal.scroll_up(needed_lines - distance_to_end);
         }
 
         self.terminal.goto_begining_of_line();
-        self.terminal.save_cursor()?;
-        self.terminal.goto_next_line()?;
+        self.terminal.save_cursor();
+        self.terminal.goto_next_line();
 
         let idx = self.autocomplete.get_idx();
 
@@ -199,21 +187,20 @@ impl Executor {
             }
             count += 1;
             if count == num_per_line {
-                self.terminal.goto_next_line()?;
+                self.terminal.goto_next_line();
                 count = 0;
             }
         }
-        self.terminal.restore_cursor()?;
+        self.terminal.restore_cursor();
         self.terminal.goto_begining_of_line();
 
         if let Some(keyword) = self.autocomplete.get_keywords().get(idx) {
             let keyword = keyword.trim_end();
             print!("{} {}", self.prompt, keyword);
         }
-        Ok(())
     }
 
-    fn exec_valid_char(&mut self, buffer: String) -> Result<Option<String>> {
+    fn exec_valid_char(&mut self, buffer: String) -> Option<String> {
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
             self.scanner.update_buffer(buffer);
         }
@@ -228,12 +215,12 @@ impl Executor {
             .print_same_line_autocompleted(&buffer, &self.terminal);
 
         self.autocomplete.reset_tabbed();
-        Ok(None)
+        None
     }
 
     pub fn print_msg(&self, msg: String) {
-        self.terminal.goto_next_line().unwrap();
+        self.terminal.goto_next_line();
         print!("{}", msg);
-        self.terminal.goto_next_line().unwrap();
+        self.terminal.goto_next_line();
     }
 }

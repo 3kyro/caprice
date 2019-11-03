@@ -1,8 +1,6 @@
 use crate::caprice_engine::Executor;
 use crate::caprice_terminal::TerminalManipulator;
-use crate::Result;
 use crossterm::style::Attribute;
-use std::mem::drop;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
@@ -38,15 +36,15 @@ impl Caprice {
     }
 
     pub fn init(mut self) -> Self {
-        self.executor.reset_prompt().unwrap();
+        self.executor.reset_prompt();
         self
     }
 
     pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
         if flag {
-            self.terminal.enable_alternate_screen().unwrap();
+            self.terminal.enable_alternate_screen();
         } else {
-            self.terminal.enable_raw_screen().unwrap();
+            self.terminal.enable_raw_screen();
         }
         self
     }
@@ -68,26 +66,17 @@ impl Caprice {
         self
     }
 
-    /// Caprice internally is using Crossterm's Rawmode for terminal manipulation.
-    /// In order for the process to exit correctly, cleaning up all changes made
-    /// to the current terminal, a standard process::exit() procedure cannot be used.
-    /// Instead eval will return a Error::new(ErrorKind::Interrupted, "Program Exit"),
-    /// which the calling funxtion should interpret as a stop command
-    ///
-    /// # Example
-    /// ```
-    /// loop {
-    ///     // ignoring possible token return
-    ///     if let Ok(_) = caprice_instance.eval() {}
-    ///     else {
-    ///         break
-    ///     }
-    /// }
-    pub fn eval(&mut self) -> Result<Option<String>> {
+    pub fn eval(&mut self) -> Option<String> {
         self.executor.poll()
     }
 
-    pub fn run(mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>, JoinHandle<()>) {
+    pub fn run(
+        mut self,
+    ) -> (
+        mpsc::Sender<CapriceCommand>,
+        mpsc::Receiver<String>,
+        JoinHandle<()>,
+    ) {
         let (tx_stop, rx_token) = self.channels();
 
         let tx = self.tx_out.clone().unwrap();
@@ -95,12 +84,8 @@ impl Caprice {
         let handle = thread::spawn(move || loop {
             thread::sleep(Duration::from_millis(10));
 
-            if let Ok(option) = self.eval() {
-                if let Some(keyword) = option {
-                    tx.send(keyword).unwrap();
-                }
-            } else {
-                break;
+            if let Some(keyword) = self.eval() {
+                tx.send(keyword).unwrap();
             }
 
             if let Some(rx) = &self.rx_in {
@@ -110,7 +95,7 @@ impl Caprice {
                             self.executor.print_msg(msg);
                         }
                         CapriceCommand::Exit => {
-                            self.executor.exec_exit().unwrap();
+                            self.executor.exec_exit();
                             break;
                         }
                     }
@@ -132,7 +117,7 @@ impl Caprice {
     }
 
     pub fn enable_raw_screen(mut self) -> Self {
-        self.terminal.enable_raw_screen().unwrap();
+        self.terminal.enable_raw_screen();
         self
     }
 }
@@ -140,9 +125,9 @@ impl Caprice {
 /// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
-        self.terminal.clear_from_cursor().unwrap();
-        self.terminal.flush().unwrap();
-        self.terminal.disable_raw_screen().unwrap();
+        self.terminal.clear_from_cursor();
+        self.terminal.flush();
+        self.terminal.disable_raw_screen();
         // reset terminal attributes
         println!("{}", Attribute::Reset);
     }
