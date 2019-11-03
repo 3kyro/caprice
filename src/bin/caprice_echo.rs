@@ -1,8 +1,9 @@
 use caprice::{Caprice, CapriceCommand};
+use std::thread;
+use std::time::Duration;
 fn main() {
     let mut caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
-        // .enable_alternate_screen(false) // do not use alternate screen
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
         .init(); // initialises the caprice terminal
     // set some tokens
@@ -29,8 +30,14 @@ fn main() {
                     break; // caprice has already exited, let the main process do as well
                 },
                 // else send back the token to be printed
-                _ => tx.send(CapriceCommand::Println(token)).unwrap(),
+                _ => {
+
+                    let print_token = format!("Hello {}", token);
+                    tx.send(CapriceCommand::Println(print_token)).unwrap();
+                }
             }   
         }
+        // let the thread sleep for some time
+        thread::sleep(Duration::from_millis(10));
     }
 }

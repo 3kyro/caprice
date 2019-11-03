@@ -5,6 +5,7 @@ use crossterm::Attribute;
 use std::mem::drop;
 use std::sync::mpsc;
 use std::thread;
+use std::time::Duration;
 
 pub enum CapriceCommand {
     Println(String),
@@ -94,6 +95,8 @@ impl Caprice {
         let tx = self.tx_out.clone().unwrap();
 
         thread::spawn(move || loop {
+            thread::sleep(Duration::from_millis(10));
+            
             if let Ok(option) = self.eval() {
                 if let Some(keyword) = option {
                     tx.send(keyword).unwrap();
