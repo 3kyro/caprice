@@ -106,6 +106,8 @@ impl Executor {
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
+        self.terminal.exit();
+
         Err(crossterm::ErrorKind::IoError(Error::new(
             ErrorKind::Interrupted,
             "Program Exit",

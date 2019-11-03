@@ -18,7 +18,7 @@ impl Scanner {
     pub(crate) fn new() -> Self {
         Scanner {
             buffer: String::new(),
-            enable_ctrl_c: false,
+            enable_ctrl_c: true,
         }
     }
 

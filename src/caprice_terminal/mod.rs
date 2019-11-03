@@ -113,4 +113,8 @@ impl TerminalManipulator {
 
         Ok(())
     }
+
+    pub(crate) fn exit(&self) {
+        terminal::exit();
+    }
 }

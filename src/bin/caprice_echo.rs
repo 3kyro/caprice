@@ -27,6 +27,8 @@ fn main() {
                 "exit" => {
                     tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
                     tx.send(CapriceCommand::Exit).unwrap();
+                    // give some time to caprice to exit
+                    thread::sleep(Duration::from_millis(30));
                     break; // caprice has already exited, let the main process do as well
                 }
                 // else send back the token to be printed
