@@ -1,7 +1,7 @@
 use crate::caprice_engine::Executor;
 use crate::caprice_terminal::TerminalManipulator;
 use crate::Result;
-use crossterm::Attribute;
+use crossterm::style::Attribute;
 use std::mem::drop;
 use std::sync::mpsc;
 use std::thread;
@@ -20,7 +20,6 @@ pub struct Caprice {
 }
 
 impl Caprice {
-
     /// Creates a new Caprice object
     pub fn new() -> Self {
         Caprice {
@@ -28,7 +27,8 @@ impl Caprice {
             terminal: TerminalManipulator::new(),
             tx_out: None,
             rx_in: None,
-        }.enable_raw_screen()
+        }
+        .enable_raw_screen()
     }
 
     /// Sets the current active keywords for the parser
@@ -45,9 +45,7 @@ impl Caprice {
     pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
         if flag {
             self.terminal.enable_alternate_screen().unwrap();
-        } 
-        
-        else {
+        } else {
             self.terminal.enable_raw_screen().unwrap();
         }
         self
@@ -96,7 +94,7 @@ impl Caprice {
 
         thread::spawn(move || loop {
             thread::sleep(Duration::from_millis(10));
-            
+
             if let Ok(option) = self.eval() {
                 if let Some(keyword) = option {
                     tx.send(keyword).unwrap();
@@ -137,8 +135,6 @@ impl Caprice {
         self.terminal.enable_raw_screen().unwrap();
         self
     }
-
-    
 }
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state

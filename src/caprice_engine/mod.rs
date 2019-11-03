@@ -3,7 +3,7 @@ use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
 use crate::Result;
 
-use crossterm::{Attribute, Color, Colored};
+use crossterm::style::{Attribute, Color, SetBackgroundColor};
 use std::io::{Error, ErrorKind};
 pub(crate) struct Executor {
     terminal: TerminalManipulator,
@@ -187,7 +187,12 @@ impl Executor {
         for (i, word) in self.autocomplete.get_keywords().iter().enumerate() {
             // highlight current selection
             if i == idx {
-                print!("{}{}  {}", Colored::Bg(Color::Cyan), word, Attribute::Reset);
+                print!(
+                    "{}{}  {}",
+                    SetBackgroundColor(Color::Cyan),
+                    word,
+                    Attribute::Reset
+                );
             } else {
                 print!("{}  ", word);
             }

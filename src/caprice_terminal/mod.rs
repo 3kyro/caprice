@@ -1,7 +1,9 @@
-use crossterm::{
-    input, AlternateScreen, ClearType, InputEvent, RawScreen, Result, AsyncReader, Terminal,
-    TerminalCursor,
-};
+use crossterm::cursor::{self, MoveLeft, MoveTo, RestorePosition, SavePosition};
+use crossterm::input::{input, AsyncReader, InputEvent};
+use crossterm::screen::{AlternateScreen, RawScreen};
+use crossterm::terminal::{self, Clear, ClearType};
+use crossterm::{execute, ExecutableCommand, Result};
+
 use std::io::{stdout, Stdout, Write};
 
 enum ScreenType {
@@ -11,8 +13,6 @@ enum ScreenType {
 }
 
 pub(super) struct TerminalManipulator {
-    terminal: crossterm::Terminal,
-    cursor: TerminalCursor,
     stdin: AsyncReader,
     stdout: Stdout,
     screen: ScreenType,
@@ -21,8 +21,6 @@ pub(super) struct TerminalManipulator {
 impl TerminalManipulator {
     pub(super) fn new() -> Self {
         TerminalManipulator {
-            terminal: Terminal::new(),
-            cursor: TerminalCursor::new(),
             stdin: input().read_async(),
             stdout: stdout(),
             screen: ScreenType::DefaultScreen,
@@ -34,8 +32,10 @@ impl TerminalManipulator {
     }
 
     pub(super) fn clear_from_cursor(&self) -> Result<()> {
-        self.terminal.clear(ClearType::FromCursorDown)?;
-        self.terminal.clear(ClearType::UntilNewLine)?;
+        stdout()
+            .execute(Clear(ClearType::FromCursorDown))?
+            .execute(Clear(ClearType::UntilNewLine))?;
+
         Ok(())
     }
 
@@ -46,15 +46,15 @@ impl TerminalManipulator {
     }
 
     pub(super) fn clear_line(&self) -> Result<()> {
-        self.terminal.clear(ClearType::UntilNewLine)
+        execute!(stdout(), Clear(ClearType::UntilNewLine))
     }
 
     pub(super) fn save_cursor(&self) -> Result<()> {
-        self.cursor.save_position()
+        execute!(stdout(), SavePosition)
     }
 
     pub(super) fn restore_cursor(&self) -> Result<()> {
-        self.cursor.restore_position()
+        execute!(stdout(), RestorePosition)
     }
 
     pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
@@ -64,7 +64,7 @@ impl TerminalManipulator {
 
     pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
         self.screen = ScreenType::AlternateScreenType(AlternateScreen::to_alternate(true).unwrap());
-        self.cursor.goto(0, 0)?;
+        execute!(stdout(), MoveTo(0, 0))?;
         Ok(())
     }
 
@@ -80,11 +80,11 @@ impl TerminalManipulator {
     }
 
     pub(crate) fn goto_begining_of_line(&mut self) {
-        self.cursor.move_left(self.cursor.pos().unwrap().0).unwrap();
+        execute!(stdout(), MoveLeft(cursor::position().unwrap().0)).unwrap();
     }
 
     pub(crate) fn size(&self) -> (u16, u16) {
-        if let Ok(size) = self.terminal.size() {
+        if let Ok(size) = terminal::size() {
             size
         } else {
             (0, 0)
@@ -92,7 +92,7 @@ impl TerminalManipulator {
     }
 
     pub(crate) fn get_cursor_pos(&self) -> (u16, u16) {
-        if let Ok(pos) = self.cursor.pos() {
+        if let Ok(pos) = cursor::position() {
             pos
         } else {
             (0, 0)
@@ -100,14 +100,15 @@ impl TerminalManipulator {
     }
 
     pub(crate) fn scroll_up(&mut self, step: u16) -> Result<()> {
-        self.terminal.scroll_up(step)?;
-        self.cursor.move_up(step)?;
+        stdout()
+            .execute(terminal::ScrollUp(step))?
+            .execute(cursor::MoveUp(step))?;
 
         Ok(())
     }
 
     pub(crate) fn backspace(&mut self) -> Result<()> {
-        self.cursor.move_left(1)?;
+        execute!(stdout(), cursor::MoveLeft(1))?;
         self.clear_line()?;
 
         Ok(())

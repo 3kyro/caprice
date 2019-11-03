@@ -1,5 +1,5 @@
 use crate::caprice_terminal::TerminalManipulator;
-use crossterm::{Attribute, Color, Colored};
+use crossterm::style::{Attribute, Color, SetForegroundColor};
 
 use crate::Result;
 use std::io::{Error, ErrorKind};
@@ -108,6 +108,7 @@ impl<'a> Autocomplete {
         }
     }
 
+    // displays an autocomplete suggestion
     pub(crate) fn print_same_line_autocompleted(
         &self,
         buffer: &str,
@@ -117,9 +118,10 @@ impl<'a> Autocomplete {
             terminal.save_cursor().unwrap();
 
             // print in DarkGreen the autocompleted part
+            //
             print!(
                 "{}{}{}",
-                Colored::Fg(Color::DarkGreen),
+                SetForegroundColor(Color::DarkGreen),
                 self.common.split_at(buffer.len()).1,
                 Attribute::Reset
             );

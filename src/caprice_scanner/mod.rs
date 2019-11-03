@@ -1,4 +1,4 @@
-use crossterm::{InputEvent, KeyEvent};
+use crossterm::input::{InputEvent, KeyEvent};
 
 pub(crate) enum TokenType {
     Token(String),
