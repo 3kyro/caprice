@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 crossterm = "0.13.0"    
 exitcode = "1.1.2"
-
+anyhow = "1.0.19"
