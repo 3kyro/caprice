@@ -1,4 +1,5 @@
 use crate::caprice_terminal::TerminalManipulator;
+use anyhow::Result;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
 pub(crate) struct Autocomplete {
@@ -103,9 +104,9 @@ impl<'a> Autocomplete {
         &self,
         buffer: &str,
         terminal: &TerminalManipulator,
-    ) {
+    ) -> Result<()> {
         if !self.common.is_empty() {
-            terminal.save_cursor();
+            terminal.save_cursor()?;
 
             // print in DarkGreen the autocompleted part
             //
@@ -116,11 +117,12 @@ impl<'a> Autocomplete {
                 Attribute::Reset
             );
 
-            terminal.restore_cursor();
+            terminal.restore_cursor()?;
         } else {
             // clear everything left of the cursor
-            terminal.clear_from_cursor();
+            terminal.clear_from_cursor()?;
         }
+        Ok(())
     }
 }
 

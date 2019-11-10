@@ -1,15 +1,15 @@
 use crate::caprice_engine::Executor;
 use crate::caprice_terminal::TerminalManipulator;
+use anyhow::Result;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
-use anyhow::Result;
 
 pub type CapriceMessage = (
     mpsc::Sender<CapriceCommand>,
     mpsc::Receiver<String>,
-    JoinHandle<()>,
+    JoinHandle<Result<()>>,
 );
 
 pub enum CapriceCommand {
@@ -43,15 +43,22 @@ impl Caprice {
     }
 
     pub fn init(mut self) -> Self {
-        self.executor.reset_prompt();
-        self
+        if self.executor.reset_prompt().is_ok() {
+            self
+        } else {
+            panic!("Caprice: Error initialising prompt");
+        }
     }
 
     pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
         if flag {
-            self.terminal.enable_alternate_screen();
+            self.terminal
+                .enable_alternate_screen()
+                .expect("Caprice: Error enabling alternate screen");
         } else {
-            self.terminal.enable_raw_screen();
+            self.terminal
+                .enable_raw_screen()
+                .expect("Caprice: Error enabling raw screen");
         }
         self
     }
@@ -73,35 +80,33 @@ impl Caprice {
         self
     }
 
-    pub fn eval(&mut self) -> Option<String> {
+    pub fn eval(&mut self) -> Result<Option<String>> {
         self.executor.poll()
     }
 
-
-    
-    pub fn run(
-        mut self,
-    ) -> Result<CapriceMessage> {
+    pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
 
-        let tx = self.tx_out.clone().unwrap();
+        let tx = self.tx_out.clone().expect("Caprice: Uninitialised Chanels");
 
-        let handle = thread::spawn(move || loop {
-            thread::sleep(Duration::from_millis(10));
+        let handle = thread::spawn(move || -> Result<()> {
+            loop {
+                thread::sleep(Duration::from_millis(10));
 
-            if let Some(keyword) = self.eval() {
-                tx.send(keyword).unwrap();
-            }
+                if let Some(keyword) = self.eval()? {
+                    tx.send(keyword)?;
+                }
 
-            if let Some(rx) = &self.rx_in {
-                if let Ok(command) = rx.try_recv() {
-                    match command {
-                        CapriceCommand::Println(msg) => {
-                            self.executor.print_msg(msg);
-                        }
-                        CapriceCommand::Exit => {
-                            self.executor.exec_exit();
-                            break;
+                if let Some(rx) = &self.rx_in {
+                    if let Ok(command) = rx.try_recv() {
+                        match command {
+                            CapriceCommand::Println(msg) => {
+                                self.executor.print_msg(msg)?;
+                            }
+                            CapriceCommand::Exit => {
+                                self.executor.exec_exit()?;
+                                return Ok(());
+                            }
                         }
                     }
                 }
@@ -122,7 +127,9 @@ impl Caprice {
     }
 
     pub fn enable_raw_screen(mut self) -> Self {
-        self.terminal.enable_raw_screen();
+        self.terminal
+            .enable_raw_screen()
+            .expect("Caprice: Error enabling raw screen");
         self
     }
 }
@@ -130,9 +137,9 @@ impl Caprice {
 /// original state
 impl Drop for Caprice {
     fn drop(&mut self) {
-        self.terminal.clear_from_cursor();
-        self.terminal.flush();
-        self.terminal.disable_raw_screen();
+        self.terminal.clear_from_cursor().unwrap();
+        self.terminal.flush().unwrap();
+        self.terminal.disable_raw_screen().unwrap();
         // reset terminal attributes
         println!("{}", Attribute::Reset);
     }

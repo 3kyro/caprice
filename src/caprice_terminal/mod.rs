@@ -1,3 +1,4 @@
+use anyhow::Result;
 use crossterm::cursor::{self, MoveLeft, MoveTo, RestorePosition, SavePosition};
 use crossterm::input::{input, AsyncReader, InputEvent};
 use crossterm::screen::{AlternateScreen, RawScreen};
@@ -31,50 +32,59 @@ impl TerminalManipulator {
         self.stdin.next()
     }
 
-    pub(super) fn clear_from_cursor(&self) {
+    pub(super) fn clear_from_cursor(&self) -> Result<()> {
         stdout()
-            .execute(Clear(ClearType::FromCursorDown))
-            .unwrap()
-            .execute(Clear(ClearType::UntilNewLine))
-            .unwrap();
+            .execute(Clear(ClearType::FromCursorDown))?
+            .execute(Clear(ClearType::UntilNewLine))?;
+
+        Ok(())
     }
 
-    pub(super) fn goto_next_line(&self) {
-        self.clear_from_cursor();
+    pub(super) fn goto_next_line(&self) -> Result<()> {
+        self.clear_from_cursor()?;
         println!("\r");
+        Ok(())
     }
 
-    pub(super) fn clear_line(&self) {
-        execute!(stdout(), Clear(ClearType::UntilNewLine)).unwrap()
+    pub(super) fn clear_line(&self) -> Result<()> {
+        execute!(stdout(), Clear(ClearType::UntilNewLine))?;
+        Ok(())
     }
 
-    pub(super) fn save_cursor(&self) {
-        execute!(stdout(), SavePosition).unwrap();
+    pub(super) fn save_cursor(&self) -> Result<()> {
+        execute!(stdout(), SavePosition)?;
+        Ok(())
     }
 
-    pub(super) fn restore_cursor(&self) {
-        execute!(stdout(), RestorePosition).unwrap();
+    pub(super) fn restore_cursor(&self) -> Result<()> {
+        execute!(stdout(), RestorePosition)?;
+        Ok(())
     }
 
-    pub(super) fn enable_raw_screen(&mut self) {
-        self.screen = ScreenType::RawScreenType(RawScreen::into_raw_mode().unwrap());
+    pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
+        self.screen = ScreenType::RawScreenType(RawScreen::into_raw_mode()?);
+        Ok(())
     }
 
-    pub(super) fn enable_alternate_screen(&mut self) {
-        self.screen = ScreenType::AlternateScreenType(AlternateScreen::to_alternate(true).unwrap());
-        execute!(stdout(), MoveTo(0, 0)).unwrap();
+    pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
+        self.screen = ScreenType::AlternateScreenType(AlternateScreen::to_alternate(true)?);
+        execute!(stdout(), MoveTo(0, 0))?;
+        Ok(())
     }
 
-    pub(crate) fn disable_raw_screen(&self) {
-        RawScreen::disable_raw_mode().unwrap();
+    pub(crate) fn disable_raw_screen(&self) -> Result<()> {
+        RawScreen::disable_raw_mode()?;
+        Ok(())
     }
 
-    pub(crate) fn flush(&mut self) {
-        self.stdout.flush().unwrap();
+    pub(crate) fn flush(&mut self) -> Result<()> {
+        self.stdout.flush()?;
+        Ok(())
     }
 
-    pub(crate) fn goto_begining_of_line(&mut self) {
-        execute!(stdout(), MoveLeft(cursor::position().unwrap().0)).unwrap();
+    pub(crate) fn goto_begining_of_line(&mut self) -> Result<()> {
+        execute!(stdout(), MoveLeft(cursor::position()?.0))?;
+        Ok(())
     }
 
     pub(crate) fn size(&self) -> (u16, u16) {
@@ -93,17 +103,17 @@ impl TerminalManipulator {
         }
     }
 
-    pub(crate) fn scroll_up(&mut self, step: u16) {
+    pub(crate) fn scroll_up(&mut self, step: u16) -> Result<()> {
         stdout()
-            .execute(terminal::ScrollUp(step))
-            .unwrap()
-            .execute(cursor::MoveUp(step))
-            .unwrap();
+            .execute(terminal::ScrollUp(step))?
+            .execute(cursor::MoveUp(step))?;
+        Ok(())
     }
 
-    pub(crate) fn backspace(&mut self) {
-        execute!(stdout(), cursor::MoveLeft(1)).unwrap();
-        self.clear_line();
+    pub(crate) fn backspace(&mut self) -> Result<()> {
+        execute!(stdout(), cursor::MoveLeft(1))?;
+        self.clear_line()?;
+        Ok(())
     }
 
     pub(crate) fn exit(&self) {
