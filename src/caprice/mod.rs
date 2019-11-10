@@ -6,6 +6,10 @@ use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
+/// Return type of Caprice::run
+/// Sender can be used to send commands to the caprice repl
+/// Receiver can be used to receive the keywords typed by the user
+/// Handle can be used to join the repl's thread
 pub type CapriceMessage = (
     mpsc::Sender<CapriceCommand>,
     mpsc::Receiver<String>,
@@ -93,15 +97,14 @@ impl Caprice {
         self
     }
 
-    pub fn eval(&mut self) -> Result<Option<String>> {
-        self.executor.poll()
-    }
-
+    
+    /// Runs the repl in a separate thread returning the transmit and receive channels for message 
+    /// passing as well as the thread handle for its manipulation by the parent application
     pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
-
+        
         let tx = self.tx_out.clone().expect("Caprice: Uninitialised Chanels");
-
+        
         let handle = thread::spawn(move || -> Result<()> {
             loop {
                 // give the cpu some time
@@ -130,6 +133,11 @@ impl Caprice {
         Ok((tx_stop, rx_token, handle))
     }
 
+    fn eval(&mut self) -> Result<Option<String>> {
+        self.executor.poll()
+    }
+    
+    // Creates and binds the channels used for communication between caprice and the parent application
     fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
         let (tx_token, rx_token) = mpsc::channel();
         let (tx_stop, rx_stop) = mpsc::channel();
@@ -140,7 +148,8 @@ impl Caprice {
         (tx_stop, rx_token)
     }
 
-    pub fn enable_raw_screen(mut self) -> Self {
+    // Enables RawScreen. Raw screen is enabled by default during the caprice's object creation
+    fn enable_raw_screen(mut self) -> Self {
         self.terminal
             .enable_raw_screen()
             .expect("Caprice: Error enabling raw screen");
