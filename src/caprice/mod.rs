@@ -57,7 +57,6 @@ impl Caprice {
     /// ```
     /// let mut caprice = Caprice::new()
     ///     .set_prompt("!:") // set the prompt
-    ///     .enable_alternate_screen(false) // do not use alternate screen
     ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
     ///     .init(); // initialises the caprice terminal
     pub fn init(mut self) -> Self {
@@ -69,16 +68,10 @@ impl Caprice {
     }
 
     /// Enables Alternate Screen rendering
-    pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
-        if flag {
-            self.terminal
-                .enable_alternate_screen()
-                .expect("Caprice: Error enabling alternate screen");
-        } else {
-            self.terminal
-                .enable_raw_screen()
-                .expect("Caprice: Error enabling raw screen");
-        }
+    pub fn enable_alternate_screen(mut self) -> Self {
+        self.terminal
+            .enable_alternate_screen()
+            .expect("Caprice: Error enabling alternate screen");
         self
     }
 
