@@ -27,13 +27,15 @@ fn main() {
                 "exit" => {
                     tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
                     tx.send(CapriceCommand::Exit).unwrap();
-                    // wait for caprice to exit
-                    caprice_handle.join().unwrap().unwrap();
-                    break; // caprice has already exited, let the main process do as well
+                    caprice_handle
+                        .join()
+                        .expect("couldn't join thread")
+                        .expect("Caprice run has encountered an error");
+                    break; // at this point caprice has already exited, let the main process do as well
                 }
                 // else send back the token to be printed
                 _ => {
-                    let print_token = format!("Hello {}", token);
+                    let print_token = format!("Got {} from Caprice", token);
                     tx.send(CapriceCommand::Println(print_token)).unwrap();
                 }
             }

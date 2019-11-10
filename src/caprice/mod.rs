@@ -12,11 +12,13 @@ pub type CapriceMessage = (
     JoinHandle<Result<()>>,
 );
 
+/// Commands that can be sent to the Caprice repl by the invoking application
 pub enum CapriceCommand {
     Println(String),
     Exit,
 }
 
+/// The main object of the Caprice repl
 pub struct Caprice {
     executor: Executor,
     terminal: TerminalManipulator,
@@ -25,7 +27,8 @@ pub struct Caprice {
 }
 
 impl Caprice {
-    /// Creates a new Caprice object
+    /// Creates a new Caprice object.
+    /// RawScreen is enabled by default
     pub fn new() -> Self {
         Caprice {
             executor: Executor::new(),
@@ -38,10 +41,25 @@ impl Caprice {
 
     /// Sets the current active keywords for the parser
     ///
+    /// ## Note
+    /// This method __will not__ check for the length of the provided keywords,
+    /// nor if these keywords can be correctly displayed in all supported
+    /// terminals.
     pub fn set_keywords(&mut self, keywords: &Vec<String>) {
         self.executor.set_keywords(keywords);
     }
 
+    /// Initialises the caprice repl.
+    /// This function should be the last one called in the
+    /// caprice object's contruction chain
+    ///
+    /// # Example
+    /// ```
+    /// let mut caprice = Caprice::new()
+    ///     .set_prompt("!:") // set the prompt
+    ///     .enable_alternate_screen(false) // do not use alternate screen
+    ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+    ///     .init(); // initialises the caprice terminal
     pub fn init(mut self) -> Self {
         if self.executor.reset_prompt().is_ok() {
             self
@@ -50,6 +68,7 @@ impl Caprice {
         }
     }
 
+    /// Enables Alternate Screen rendering
     pub fn enable_alternate_screen(mut self, flag: bool) -> Self {
         if flag {
             self.terminal
@@ -63,6 +82,7 @@ impl Caprice {
         self
     }
 
+    /// Disables exiting the repl when pressing ctrl+c
     pub fn disable_ctrl_c(mut self) -> Self {
         self.executor.scanner.enable_ctrl_c = false;
         self
@@ -91,6 +111,7 @@ impl Caprice {
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
+                // give the cpu some time
                 thread::sleep(Duration::from_millis(10));
 
                 if let Some(keyword) = self.eval()? {
