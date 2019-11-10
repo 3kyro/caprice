@@ -4,6 +4,13 @@ use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+use anyhow::Result;
+
+pub type CapriceMessage = (
+    mpsc::Sender<CapriceCommand>,
+    mpsc::Receiver<String>,
+    JoinHandle<()>,
+);
 
 pub enum CapriceCommand {
     Println(String),
@@ -70,13 +77,11 @@ impl Caprice {
         self.executor.poll()
     }
 
+
+    
     pub fn run(
         mut self,
-    ) -> (
-        mpsc::Sender<CapriceCommand>,
-        mpsc::Receiver<String>,
-        JoinHandle<()>,
-    ) {
+    ) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
 
         let tx = self.tx_out.clone().unwrap();
@@ -103,7 +108,7 @@ impl Caprice {
             }
         });
 
-        (tx_stop, rx_token, handle)
+        Ok((tx_stop, rx_token, handle))
     }
 
     fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
