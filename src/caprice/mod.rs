@@ -58,11 +58,14 @@ impl Caprice {
     /// caprice object's contruction chain
     ///
     /// # Example
-    /// ```
+    /// ```rust, no_run
+    ///  use caprice::Caprice;
+    /// 
     /// let mut caprice = Caprice::new()
     ///     .set_prompt("!:") // set the prompt
     ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
     ///     .init(); // initialises the caprice terminal
+    /// ```
     pub fn init(mut self) -> Self {
         if self.executor.reset_prompt().is_ok() {
             self

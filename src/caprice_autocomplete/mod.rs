@@ -292,14 +292,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn increment_index_emty() {
-        let mut autocomplete = Autocomplete::new();
-        // panics with empty lists
-        assert_eq!(autocomplete.incr_idx(), ());
-    }
-
-    #[test]
     fn increment_index_wraps_around() {
         let mut autocomplete = Autocomplete::new();
 

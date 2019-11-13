@@ -2,12 +2,14 @@
 //! autocomplete feature.
 //!
 //! # Example:
-//! ```
+//! ```rust, no_run
 //! use caprice::{Caprice, CapriceCommand};
+//! use std::thread;
+//! use std::time::Duration;
 //!
 //! let mut caprice = Caprice::new()
 //!     .set_prompt("!:") // set the prompt
-//!     .enable_alternate_screen(false) // do not use alternate screen
+//!     .enable_alternate_screen() // do not use alternate screen
 //!     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
 //!     .init(); // initialises the caprice terminal
 //!
@@ -21,7 +23,7 @@
 //! // caprice.run() will execute the repl in a separate thread.
 //! // You can use the returned tx and rx channels for receiving and sending messages
 //! // to caprice and the handle to join Caprice's thread with the main thread.
-//! let (tx,rx, handle) = caprice.run();
+//! let (tx,rx, handle) = caprice.run().unwrap();
 //!
 //! // Our main application runs here.
 //! // For this example we will simply print back
@@ -35,7 +37,7 @@
 //!             "exit" => {
 //!                 tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();  
 //!                 tx.send(CapriceCommand::Exit).unwrap();
-//!                 caprice_handle.join().expect("couldn't join thread").expect("Caprice run has encountered an error");
+//!                 handle.join().expect("couldn't join thread").expect("Caprice run has encountered an error");
 //!                 break; // at this point caprice has already exited, let the main process do as well
 //!             },
 //!             // else send back the token to be printed
@@ -55,5 +57,5 @@ mod caprice_autocomplete;
 mod caprice_engine;
 mod caprice_scanner;
 mod caprice_terminal;
-pub use caprice::Caprice;
-pub use caprice::CapriceCommand;
+pub use self::caprice::Caprice;
+pub use self::caprice::CapriceCommand;
