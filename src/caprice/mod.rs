@@ -60,7 +60,7 @@ impl Caprice {
     /// # Example
     /// ```rust, no_run
     ///  use caprice::Caprice;
-    /// 
+    ///
     /// let mut caprice = Caprice::new()
     ///     .set_prompt("!:") // set the prompt
     ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
@@ -100,14 +100,13 @@ impl Caprice {
         self
     }
 
-    
-    /// Runs the repl in a separate thread returning the transmit and receive channels for message 
+    /// Runs the repl in a separate thread returning the transmit and receive channels for message
     /// passing as well as the thread handle for its manipulation by the parent application
     pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
-        
+
         let tx = self.tx_out.clone().expect("Caprice: Uninitialised Chanels");
-        
+
         let handle = thread::spawn(move || -> Result<()> {
             loop {
                 // give the cpu some time
@@ -139,7 +138,7 @@ impl Caprice {
     fn eval(&mut self) -> Result<Option<String>> {
         self.executor.poll()
     }
-    
+
     // Creates and binds the channels used for communication between caprice and the parent application
     fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
         let (tx_token, rx_token) = mpsc::channel();
