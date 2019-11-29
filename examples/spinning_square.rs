@@ -1,5 +1,6 @@
 extern crate piston;
 extern crate graphics;
+
 extern crate glutin_window;
 extern crate opengl_graphics;
 
@@ -59,50 +60,50 @@ fn main() {
     
     caprice.set_keywords(&vec!["green".to_owned(), "blue".to_owned()]);
 
-    let (tx, rx) = caprice.run();
-
-    let thr = spawn(move || {
+    let (tx, rx, caprice_handle) = caprice.run().unwrap();
 
     let opengl = OpenGL::V3_2;
-        let mut window: Window = WindowSettings::new(
-                "spinning-square",
-                [200, 200]
-            )
-            .graphics_api(opengl)
-            .exit_on_esc(true)
-            .automatic_close(false)
-            .build()
-            .unwrap();
-        let mut app = App {
-            gl: GlGraphics::new(opengl),
-            rotation: 0.0,
-            bg_color: [0.0, 1.0, 0.0, 1.0],
-            fg_color: [1.0, 0.0, 0.0, 1.0],
 
-        };
-        let mut events = Events::new(EventSettings::new());
-        while let Some(e) = events.next(&mut window) {
-            if let Some(r) = e.render_args() {
-                app.render(&r);
-            }
+    let mut window: Window = WindowSettings::new(
+            "spinning-square",
+            [200, 200]
+        )
+        .graphics_api(opengl)
+        .exit_on_esc(true)
+        .automatic_close(false)
+        .build()
+        .unwrap();
+    let mut app = App {
+        gl: GlGraphics::new(opengl),
+        rotation: 0.0,
+        bg_color: [0.0, 1.0, 0.0, 1.0],
+        fg_color: [1.0, 0.0, 0.0, 1.0],
 
-            if let Some(u) = e.update_args() {
-                if let Ok(color) = rx.try_recv() {
-                    match color.as_str() {
-                        "green" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
-                        "blue" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
-                        _ => {}
-                    }
-                };
-                app.update(&u);
-            }
-
-            if let Some(c) = e.close_args() {
-                tx.send(CapriceCommand::Exit).unwrap();
-                break;
-                
-            }
+    };
+    let mut events = Events::new(EventSettings::new());
+    
+    while let Some(e) = events.next(&mut window) {
+        if let Some(r) = e.render_args() {
+            app.render(&r);
         }
+
+        if let Some(u) = e.update_args() {
+            if let Ok(color) = rx.try_recv() {
+                match color.as_str() {
+                    "green" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
+                    "blue" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
+                    _ => {}
+                }
+            };
+            app.update(&u);
+        }
+
+        if let Some(c) = e.close_args() {
+            tx.send(CapriceCommand::Exit).unwrap();
+            break;
+            
+        }
+    }
 
 
 }
