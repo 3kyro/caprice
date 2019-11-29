@@ -52,30 +52,30 @@ impl Executor {
     }
 
     pub(crate) fn reset_prompt(&mut self) -> Result<()> {
-        print!("{}", self.prompt);
+        print!("{} ", self.prompt);
         self.terminal.clear_from_cursor()?;
         self.autocomplete.reset_tabbed();
         Ok(())
     }
 
     fn exec_token(&mut self, mut token: String) -> Result<Option<String>> {
-        // if tab suggestions are active, ignore the scanners token
+        // if tab suggestions are active, ignore the scanner's token
         // and use the autocompleted one
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
             token = buffer;
         }
 
         if self.keywords.contains(&token) {
-            self.terminal.goto_begining_of_line()?;
-
+            self.terminal.goto_next_line()?;
             self.reset_prompt()?;
-
             return Ok(Some(token));
-        } else if self.commands.contains(&token) {
+        } 
+        else if self.commands.contains(&token) {
             self.exec_command(token)?;
             self.terminal.goto_begining_of_line()?;
             self.reset_prompt()?;
-        } else {
+        } 
+        else {
             self.terminal.goto_next_line()?;
             self.reset_prompt()?;
         }
