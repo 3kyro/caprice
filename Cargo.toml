@@ -1,12 +1,12 @@
 [package]
 name = "caprice"
 version = "0.1.0"
-authors = ["kyro"]
+authors = ["Kyriakos Papachrysanthou"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crossterm = "0.13.0"    
+crossterm = "0.13.3"    
 exitcode = "1.1.2"
 anyhow = "1.0.19"
