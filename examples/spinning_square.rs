@@ -1,3 +1,8 @@
+// cargo run --example spinning_square  
+// 
+// The turorial is based entirely on the spinning square tutorial
+// from the Piston Game Engine
+// https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/getting-started
 extern crate piston;
 extern crate graphics;
 
@@ -11,8 +16,6 @@ use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 
 use caprice::{Caprice, CapriceCommand};
-use std::thread::spawn;
-use std::sync::mpsc;
 
 
 pub struct App {
@@ -54,13 +57,16 @@ impl App {
 }
 
 fn main() {
+    // create a caprice instance
     let mut caprice = Caprice::new()
     .disable_ctrl_c()
     .init();
     
-    caprice.set_keywords(&vec!["green".to_owned(), "blue".to_owned()]);
+    // set keywords
+    caprice.set_keywords(&vec!["exit".to_owned(), "red_foreground".to_owned() ,"green_foreground".to_owned(),"red_background".to_owned(),"green_background".to_owned(), "blue_foreground".to_owned(), "blue_background".to_owned()]);
 
-    let (tx, rx, caprice_handle) = caprice.run().unwrap();
+    // get the caprice channels
+    let (tx, rx, handle) = caprice.run().unwrap();
 
     let opengl = OpenGL::V3_2;
 
@@ -88,22 +94,28 @@ fn main() {
         }
 
         if let Some(u) = e.update_args() {
+            // check if we received a token from caprice
             if let Ok(color) = rx.try_recv() {
+                // and react accordingly
                 match color.as_str() {
-                    "green" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
-                    "blue" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
+                    "red_background" => app.bg_color = [1.0, 0.0, 0.0, 1.0],
+                    "green_background" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
+                    "blue_background" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
+                    "red_foreground" => app.fg_color = [1.0, 0.0, 0.0, 1.0],
+                    "green_foreground" => app.fg_color = [0.0, 1.0, 0.0, 1.0],
+                    "blue_foreground" => app.fg_color = [0.0, 0.0, 1.0, 1.0],
+                    "exit" => {
+                        tx.send(CapriceCommand::Exit).unwrap();
+                        // wait for caprice to exit, otherwise the terminal
+                        // might be left in raw mode on exit
+                        handle.join().unwrap().unwrap();
+                        // exit the main application
+                        break;
+                    }
                     _ => {}
                 }
             };
             app.update(&u);
         }
-
-        if let Some(c) = e.close_args() {
-            tx.send(CapriceCommand::Exit).unwrap();
-            break;
-            
-        }
     }
-
-
 }
