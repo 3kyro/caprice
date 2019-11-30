@@ -25,7 +25,6 @@ fn main() {
             match token.as_str() {
                 // leave if the user types exit
                 "exit" => {
-                    tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
                     tx.send(CapriceCommand::Exit).unwrap();
                     caprice_handle
                         .join()
