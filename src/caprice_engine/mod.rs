@@ -3,7 +3,7 @@ use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
 use anyhow::Result;
 
-use crossterm::style::{Attribute, Color, SetBackgroundColor};
+use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
 pub(crate) struct Executor {
     terminal: TerminalManipulator,
     pub(crate) scanner: Scanner,
@@ -175,12 +175,14 @@ impl Executor {
         let idx = self.autocomplete.get_idx();
 
         let mut count: u16 = 0;
+        
         for (i, word) in self.autocomplete.get_keywords().iter().enumerate() {
             // highlight current selection
             if i == idx {
                 print!(
-                    "{}{}  {}",
-                    SetBackgroundColor(Color::Cyan),
+                    "{}{}{}  {}",
+                    SetBackgroundColor(Color::Grey),
+                    SetForegroundColor(Color::Black),
                     word,
                     Attribute::Reset
                 );
