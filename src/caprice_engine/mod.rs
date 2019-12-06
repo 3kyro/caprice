@@ -175,7 +175,7 @@ impl Executor {
         let idx = self.autocomplete.get_idx();
 
         let mut count: u16 = 0;
-        
+
         for (i, word) in self.autocomplete.get_keywords().iter().enumerate() {
             // highlight current selection
             if i == idx {
