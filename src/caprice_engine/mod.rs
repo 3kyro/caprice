@@ -69,13 +69,11 @@ impl Executor {
             self.terminal.goto_next_line()?;
             self.reset_prompt()?;
             return Ok(Some(token));
-        } 
-        else if self.commands.contains(&token) {
+        } else if self.commands.contains(&token) {
             self.exec_command(token)?;
             self.terminal.goto_begining_of_line()?;
             self.reset_prompt()?;
-        } 
-        else {
+        } else {
             self.terminal.goto_next_line()?;
             self.reset_prompt()?;
         }
