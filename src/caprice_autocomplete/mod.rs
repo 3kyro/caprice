@@ -109,7 +109,6 @@ impl<'a> Autocomplete {
             terminal.save_cursor()?;
 
             // print in DarkGreen the autocompleted part
-            //
             print!(
                 "{}{}{}",
                 SetForegroundColor(Color::DarkGreen),
