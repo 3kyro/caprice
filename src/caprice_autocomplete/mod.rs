@@ -63,7 +63,7 @@ impl Autocomplete {
 impl<'a> Autocomplete {
     // takes a word and a slice of keywords and returns the sub set of the collection that starts
     // with the word and the biggest common starting str of this collection (or None if this doesn't exist)
-    pub(crate) fn update(&mut self, word: &'a String, keywords: &'a Vec<String>) {
+    pub(crate) fn update(&mut self, word: &'a str, keywords: &'a [String]) {
         let mut similar: Vec<String>;
 
         // do not return anything until word is atleast one char long

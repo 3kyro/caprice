@@ -8,9 +8,9 @@ use crossterm::{execute, ExecutableCommand};
 use std::io::{stdout, Stdout, Write};
 
 enum ScreenType {
-    RawScreenType(RawScreen),
-    AlternateScreenType(AlternateScreen),
-    DefaultScreen,
+    Raw(RawScreen),
+    Alternate(AlternateScreen),
+    Default,
 }
 
 pub(super) struct TerminalManipulator {
@@ -24,7 +24,7 @@ impl TerminalManipulator {
         TerminalManipulator {
             stdin: input().read_async(),
             stdout: stdout(),
-            screen: ScreenType::DefaultScreen,
+            screen: ScreenType::Default,
         }
     }
 
@@ -62,12 +62,12 @@ impl TerminalManipulator {
     }
 
     pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
-        self.screen = ScreenType::RawScreenType(RawScreen::into_raw_mode()?);
+        self.screen = ScreenType::Raw(RawScreen::into_raw_mode()?);
         Ok(())
     }
 
     pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
-        self.screen = ScreenType::AlternateScreenType(AlternateScreen::to_alternate(true)?);
+        self.screen = ScreenType::Alternate(AlternateScreen::to_alternate(true)?);
         execute!(stdout(), MoveTo(0, 0))?;
         Ok(())
     }

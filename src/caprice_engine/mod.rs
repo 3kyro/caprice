@@ -30,20 +30,20 @@ impl Executor {
 
         if let Some(input_event) = self.terminal.next_key_event() {
             match self.scanner.scan(input_event) {
-                TokenType::Token(token) => return self.exec_token(token),
-                TokenType::BackSpace => return self.exec_backspace(),
-                TokenType::Tab(buffer) => return self.exec_tab(buffer),
-                TokenType::Continue(buffer) => return self.exec_valid_char(buffer),
+                TokenType::Token(token) => self.exec_token(token),
+                TokenType::BackSpace => self.exec_backspace(),
+                TokenType::Tab(buffer) => self.exec_tab(buffer),
+                TokenType::Continue(buffer) => self.exec_valid_char(buffer),
                 TokenType::Exit => self.exec_exit(),
-                TokenType::None => return Ok(None),
+                TokenType::None => Ok(None),
             }
         } else {
             Ok(None)
         }
     }
 
-    pub(crate) fn set_keywords(&mut self, keywords: &Vec<String>) {
-        self.keywords = keywords.clone();
+    pub(crate) fn set_keywords(&mut self, keywords: &[String]) {
+        self.keywords = keywords.to_owned();
         self.keywords.sort();
     }
 

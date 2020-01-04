@@ -49,7 +49,7 @@ impl Caprice {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    pub fn set_keywords(&mut self, keywords: &Vec<String>) {
+    pub fn set_keywords(&mut self, keywords: &[String]) {
         self.executor.set_keywords(keywords);
     }
 
@@ -167,5 +167,11 @@ impl Drop for Caprice {
         self.terminal.disable_raw_screen().unwrap();
         // reset terminal attributes
         println!("{}", Attribute::Reset);
+    }
+}
+
+impl Default for Caprice {
+    fn default() -> Self {
+        Self::new()
     }
 }
