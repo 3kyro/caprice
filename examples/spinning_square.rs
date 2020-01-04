@@ -63,11 +63,11 @@ fn main() {
     // set keywords
     caprice.set_keywords(&vec![
         "exit".to_owned(),
-        "red_foreground".to_owned(),
-        "green_foreground".to_owned(),
+        "red_square".to_owned(),
+        "green_square".to_owned(),
         "red_background".to_owned(),
         "green_background".to_owned(),
-        "blue_foreground".to_owned(),
+        "blue_square".to_owned(),
         "blue_background".to_owned(),
     ]);
 
@@ -103,9 +103,9 @@ fn main() {
                     "red_background" => app.bg_color = [1.0, 0.0, 0.0, 1.0],
                     "green_background" => app.bg_color = [0.0, 1.0, 0.0, 1.0],
                     "blue_background" => app.bg_color = [0.0, 0.0, 1.0, 1.0],
-                    "red_foreground" => app.fg_color = [1.0, 0.0, 0.0, 1.0],
-                    "green_foreground" => app.fg_color = [0.0, 1.0, 0.0, 1.0],
-                    "blue_foreground" => app.fg_color = [0.0, 0.0, 1.0, 1.0],
+                    "red_square" => app.fg_color = [1.0, 0.0, 0.0, 1.0],
+                    "green_square" => app.fg_color = [0.0, 1.0, 0.0, 1.0],
+                    "blue_square" => app.fg_color = [0.0, 0.0, 1.0, 1.0],
                     "exit" => {
                         tx.send(CapriceCommand::Exit).unwrap();
                         // wait for caprice to exit, otherwise the terminal
