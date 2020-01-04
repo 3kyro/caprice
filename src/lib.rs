@@ -1,4 +1,4 @@
-//! Caprice is a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
+//! Caprice is a simple [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
 //! autocomplete feature.
 //!
 //! # Example:
@@ -10,7 +10,7 @@
 //! let mut caprice = Caprice::new()
 //!     .set_prompt("!:") // set the prompt
 //!     .enable_alternate_screen() // do not use alternate screen
-//!     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+//!     .disable_ctrl_c() // pressing control+c won't terminate the caprice console
 //!     .init(); // initialises the caprice terminal
 //!
 //! // set some keywords
@@ -35,7 +35,9 @@
 //!         match token.as_str() {
 //!             // leave if the user types exit    
 //!             "exit" => {
+//!                 // print a message to the screen before exiting
 //!                 tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();  
+//!                 // send an exit command
 //!                 tx.send(CapriceCommand::Exit).unwrap();
 //!                 handle.join().expect("couldn't join thread").expect("Caprice run has encountered an error");
 //!                 break; // at this point caprice has already exited, let the main process do as well
