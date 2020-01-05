@@ -7,7 +7,7 @@ fn main() {
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
         .init(); // initialises the caprice terminal
                  // set some tokens
-    caprice.set_keywords(&vec![
+    caprice.set_keywords(&[
         "some_token".to_owned(),
         "some_other_token".to_owned(),
         "exit".to_owned(), // an exit keyword

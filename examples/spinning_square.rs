@@ -61,7 +61,7 @@ fn main() {
     let mut caprice = Caprice::new().disable_ctrl_c().init();
 
     // set keywords
-    caprice.set_keywords(&vec![
+    caprice.set_keywords(&[
         "exit".to_owned(),
         "red_square".to_owned(),
         "green_square".to_owned(),
