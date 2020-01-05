@@ -2,6 +2,13 @@ Caprice is a work in progress [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93
 autocomplete feature.
 
 ![](./examples/caprice_spinning_square.gif)
+*using caprice with the spinning square example from [Piston](https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/getting-started)*
+
+#### Usage
+
+* typing *#list* will print all available tokens in the caprice console
+* pressing tab will cycle between all autocompleted suggestions
+
 
 #### Example:
 
@@ -12,9 +19,9 @@ use std::time::Duration;
 fn main() {
     let mut caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
-        .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+        .disable_ctrl_c() // pressing control + c won't close the caprice console
         .init(); // initialises the caprice terminal
-                 // set some tokens
+    // set some tokens
     caprice.set_keywords(&vec![
         "some_token".to_owned(),
         "some_other_token".to_owned(),
@@ -22,7 +29,7 @@ fn main() {
     ]);
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
-    // to caprice
+    // to caprice instance
     let (tx, rx, caprice_handle) = caprice.run().unwrap();
     // our main application runs here
     // for this example we will simply print back
@@ -52,5 +59,8 @@ fn main() {
 
 ```
 
-#### Usage
+
+#### Windows terminals
+
+Currently *caprice* is buggy on all windows terminals
 
