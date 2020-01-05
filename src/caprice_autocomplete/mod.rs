@@ -28,8 +28,9 @@ impl Autocomplete {
     }
 
     pub(crate) fn amortisize(&mut self) {
-        // get the length of the biggest word in similar
+        // get the length of the longest word in similar
         if let Some(max_len) = self.keywords.iter().map(|x| x.len()).max() {
+            // amortisize the length of every keyword to the longest one
             for word in self.keywords.iter_mut() {
                 for _ in 0..max_len - word.len() {
                     word.push(' ');
@@ -47,7 +48,7 @@ impl Autocomplete {
         }
     }
 
-    // Increments the index pointing to the current active autocompletee suggestion
+    // Increments the index pointing to the current active autocomplete suggestion,
     // wrapping around when necessary
     pub(crate) fn incr_idx(&mut self) {
         if !self.keywords.is_empty() {
