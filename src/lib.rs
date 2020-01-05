@@ -14,7 +14,7 @@
 //!     .init(); // initialises the caprice terminal
 //!
 //! // set some keywords
-//! caprice.set_keywords(&vec![
+//! caprice.set_keywords(&[
 //!    "some_token".to_owned(),
 //!    "some_other_token".to_owned(),
 //!    "exit".to_owned(), // an exit keyword

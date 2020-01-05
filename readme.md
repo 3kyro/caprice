@@ -1,4 +1,4 @@
-Caprice is a work in progress [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
+*caprice* is a work in progress [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
 autocomplete feature.
 
 ![](./examples/caprice_spinning_square.gif)
@@ -6,8 +6,11 @@ autocomplete feature.
 
 #### Usage
 
-* typing *#list* will print all available tokens in the caprice console
+* typing *#list* will print all available tokens in the caprice console in alphabetical order
 * pressing tab will cycle between all autocompleted suggestions
+
+
+*caprice* uses [crossterm](https://github.com/crossterm-rs/crossterm.git) as its terminal emulator.
 
 
 #### Example:
@@ -22,7 +25,7 @@ fn main() {
         .disable_ctrl_c() // pressing control + c won't close the caprice console
         .init(); // initialises the caprice terminal
     // set some tokens
-    caprice.set_keywords(&vec![
+    caprice.set_keywords(&[
         "some_token".to_owned(),
         "some_other_token".to_owned(),
         "exit".to_owned(), // an exit keyword
