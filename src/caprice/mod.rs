@@ -1,6 +1,6 @@
 use crate::caprice_engine::Executor;
+use crate::caprice_error::Result;
 use crate::caprice_terminal::TerminalManipulator;
-use anyhow::Result;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};

@@ -1,5 +1,5 @@
+use crate::caprice_error::Result;
 use crate::caprice_terminal::TerminalManipulator;
-use anyhow::Result;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
 pub(crate) struct Autocomplete {

@@ -57,6 +57,7 @@
 pub mod caprice;
 mod caprice_autocomplete;
 mod caprice_engine;
+mod caprice_error;
 mod caprice_scanner;
 mod caprice_terminal;
 pub use self::caprice::Caprice;

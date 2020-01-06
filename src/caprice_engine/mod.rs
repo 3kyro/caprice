@@ -1,9 +1,9 @@
 use crate::caprice_autocomplete::Autocomplete;
+use crate::caprice_error::Result;
 use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
-use anyhow::Result;
-
 use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
+
 pub(crate) struct Executor {
     terminal: TerminalManipulator,
     pub(crate) scanner: Scanner,

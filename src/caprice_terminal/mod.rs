@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::caprice_error::Result;
 use crossterm::cursor::{self, MoveLeft, MoveTo, RestorePosition, SavePosition};
 use crossterm::input::{input, AsyncReader, InputEvent};
 use crossterm::screen::{AlternateScreen, RawScreen};
