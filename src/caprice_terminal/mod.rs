@@ -1,35 +1,31 @@
 use crate::caprice_error::Result;
 use crossterm::cursor::{self, MoveLeft, MoveTo, RestorePosition, SavePosition};
-use crossterm::input::{input, AsyncReader, InputEvent};
-use crossterm::screen::{AlternateScreen, RawScreen};
-use crossterm::terminal::{self, Clear, ClearType};
+use crossterm::event;
+use crossterm::event::Event;
+use crossterm::terminal::{
+    self, disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
+    LeaveAlternateScreen,
+};
 use crossterm::{execute, ExecutableCommand};
+use std::time::Duration;
 
 use std::io::{stdout, Stdout, Write};
 
-enum ScreenType {
-    Raw(RawScreen),
-    Alternate(AlternateScreen),
-    Default,
-}
-
 pub(super) struct TerminalManipulator {
-    stdin: AsyncReader,
     stdout: Stdout,
-    screen: ScreenType,
 }
 
 impl TerminalManipulator {
     pub(super) fn new() -> Self {
-        TerminalManipulator {
-            stdin: input().read_async(),
-            stdout: stdout(),
-            screen: ScreenType::Default,
-        }
+        TerminalManipulator { stdout: stdout() }
     }
 
-    pub(super) fn next_key_event(&mut self) -> Option<InputEvent> {
-        self.stdin.next()
+    pub(super) fn next_key_event(&mut self) -> Result<Option<Event>> {
+        if event::poll(Duration::from_millis(0))? {
+            Ok(Some(event::read()?))
+        } else {
+            Ok(None)
+        }
     }
 
     pub(super) fn clear_from_cursor(&self) -> Result<()> {
@@ -62,18 +58,24 @@ impl TerminalManipulator {
     }
 
     pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
-        self.screen = ScreenType::Raw(RawScreen::into_raw_mode()?);
+        enable_raw_mode()?;
         Ok(())
     }
 
     pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
-        self.screen = ScreenType::Alternate(AlternateScreen::to_alternate(true)?);
+        execute!(stdout(), EnterAlternateScreen)?;
+        execute!(stdout(), MoveTo(0, 0))?;
+        Ok(())
+    }
+
+    pub(super) fn disable_alternate_screen(&mut self) -> Result<()> {
+        execute!(stdout(), LeaveAlternateScreen)?;
         execute!(stdout(), MoveTo(0, 0))?;
         Ok(())
     }
 
     pub(crate) fn disable_raw_screen(&self) -> Result<()> {
-        RawScreen::disable_raw_mode()?;
+        disable_raw_mode()?;
         Ok(())
     }
 

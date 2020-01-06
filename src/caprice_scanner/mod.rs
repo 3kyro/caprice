@@ -1,4 +1,4 @@
-use crossterm::input::{InputEvent, KeyEvent};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) enum TokenType {
     Token(String),
@@ -22,13 +22,27 @@ impl Scanner {
         }
     }
 
-    pub(crate) fn scan(&mut self, input_event: InputEvent) -> TokenType {
+    pub(crate) fn scan(&mut self, input_event: Event) -> TokenType {
         match input_event {
-            InputEvent::Keyboard(KeyEvent::Tab) => self.scan_tab(),
-            InputEvent::Keyboard(KeyEvent::Enter) => self.scan_enter(),
-            InputEvent::Keyboard(KeyEvent::Char(c)) => self.scan_char(c),
-            InputEvent::Keyboard(KeyEvent::Backspace) => self.scan_backspace(),
-            InputEvent::Keyboard(KeyEvent::Ctrl(c)) => self.scan_ctrl(c),
+            Event::Key(KeyEvent {
+                code: KeyCode::Tab, ..
+            }) => self.scan_tab(),
+            Event::Key(KeyEvent {
+                code: KeyCode::Enter,
+                ..
+            }) => self.scan_enter(),
+            Event::Key(KeyEvent {
+                code: KeyCode::Char('c'),
+                modifiers: KeyModifiers::CONTROL,
+            }) => self.scan_ctrl_c(),
+            Event::Key(KeyEvent {
+                code: KeyCode::Char(c),
+                ..
+            }) => self.scan_char(c),
+            Event::Key(KeyEvent {
+                code: KeyCode::Backspace,
+                ..
+            }) => self.scan_backspace(),
             _ => TokenType::None,
         }
     }
@@ -42,13 +56,8 @@ impl Scanner {
         }
     }
 
-    pub(crate) fn scan_ctrl(&mut self, c: char) -> TokenType {
-        // continue parsing if ctrl_C exit is disabled
-        if !self.enable_ctrl_c {
-            return TokenType::None;
-        }
-
-        if c == 'c' {
+    pub(crate) fn scan_ctrl_c(&self) -> TokenType {
+        if self.enable_ctrl_c {
             TokenType::Exit
         } else {
             TokenType::None

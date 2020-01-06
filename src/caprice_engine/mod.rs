@@ -28,7 +28,7 @@ impl Executor {
     pub(crate) fn poll(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
 
-        if let Some(input_event) = self.terminal.next_key_event() {
+        if let Some(input_event) = self.terminal.next_key_event()? {
             match self.scanner.scan(input_event) {
                 TokenType::Token(token) => self.exec_token(token),
                 TokenType::BackSpace => self.exec_backspace(),

@@ -165,6 +165,7 @@ impl Drop for Caprice {
         self.terminal.clear_from_cursor().unwrap();
         self.terminal.flush().unwrap();
         self.terminal.disable_raw_screen().unwrap();
+        self.terminal.disable_alternate_screen().unwrap();
         // reset terminal attributes
         println!("{}", Attribute::Reset);
     }
