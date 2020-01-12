@@ -119,6 +119,6 @@ impl TerminalManipulator {
     }
 
     pub(crate) fn exit(&self) {
-        terminal::exit();
+        std::process::exit(0);
     }
 }
