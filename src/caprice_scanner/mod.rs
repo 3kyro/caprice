@@ -75,7 +75,7 @@ impl Scanner {
     }
 
     pub(crate) fn scan_char(&mut self, c: char) -> TokenType {
-        if c.is_alphanumeric() || c == '#' || c == '_' {
+        if c.is_alphanumeric() || c == '/' || c == '_' {
             self.buffer.push(c);
             TokenType::Continue(self.buffer.clone())
         } else {

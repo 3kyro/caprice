@@ -20,7 +20,7 @@ impl Executor {
             scanner: Scanner::new(),
             autocomplete: Autocomplete::new(),
             keywords: Vec::new(),
-            commands: vec!["#list".to_owned()],
+            commands: vec!["/list".to_owned()],
             prompt: "!:".to_owned(),
         }
     }
@@ -86,7 +86,7 @@ impl Executor {
             self.scanner.update_buffer(buffer);
         }
 
-        if command == "#list" {
+        if command == "/list" {
             self.terminal.goto_next_line()?;
             for token in self.keywords.iter() {
                 println!("{}", token);
