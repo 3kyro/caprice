@@ -4,6 +4,7 @@ use std::sync::mpsc;
 pub type Result<T> = std::result::Result<T, CapriceError>;
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum CapriceError {
     CrosstermError(crossterm::ErrorKind),
     Io(std::io::Error),
