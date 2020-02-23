@@ -1,12 +1,12 @@
-*caprice* is a work in progress [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
-autocomplete feature.
+*caprice* is a work in progress REPL for Rust projects featuring an easy to use, zsh like autocomplete feature.
+
 
 ![](./examples/caprice_spinning_square.gif)
 *using caprice with the spinning square example from [Piston](https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/getting-started)*
 
 #### Usage
 
-* typing *#list* will print all available tokens in the caprice console in alphabetical order
+* typing */list* will print all available tokens in the caprice console in alphabetical order
 * pressing tab will cycle between all autocompleted suggestions
 
 
@@ -23,13 +23,12 @@ fn main() {
     let mut caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't close the caprice console
+        .set_keywords(&[  // set some tokens
+            "some_token".to_owned(),
+            "some_other_token".to_owned(),
+            "exit".to_owned(), // an exit keyword
+        ])
         .init(); // initialises the caprice terminal
-    // set some tokens
-    caprice.set_keywords(&[
-        "some_token".to_owned(),
-        "some_other_token".to_owned(),
-        "exit".to_owned(), // an exit keyword
-    ]);
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
     // to caprice instance
@@ -63,7 +62,7 @@ fn main() {
 ```
 
 
-#### Windows terminals
+#### Releases
 
-Currently *caprice* is buggy on all windows terminals
+Release info and changelogs can be found [here](https://github.com/3kyro/caprice/releases)
 

@@ -49,8 +49,11 @@ impl Caprice {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    pub fn set_keywords(&mut self, keywords: &[String]) {
+    /// However, it will check that the keywords start with an alphabetic character
+    /// and will return None otherwise
+    pub fn set_keywords(mut self, keywords: &[String]) -> Self {
         self.executor.set_keywords(keywords);
+        self
     }
 
     /// Initialises the caprice repl.

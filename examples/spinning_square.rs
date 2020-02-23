@@ -58,18 +58,19 @@ impl App {
 
 fn main() {
     // create a caprice instance
-    let mut caprice = Caprice::new().disable_ctrl_c().init();
-
-    // set keywords
-    caprice.set_keywords(&[
-        "exit".to_owned(),
-        "red_square".to_owned(),
-        "green_square".to_owned(),
-        "red_background".to_owned(),
-        "green_background".to_owned(),
-        "blue_square".to_owned(),
-        "blue_background".to_owned(),
-    ]);
+    let caprice = Caprice::new()
+        .disable_ctrl_c()
+        // set keywords
+        .set_keywords(&[
+            "exit".to_owned(),
+            "red_square".to_owned(),
+            "green_square".to_owned(),
+            "red_background".to_owned(),
+            "green_background".to_owned(),
+            "blue_square".to_owned(),
+            "blue_background".to_owned(),
+        ])
+        .init();
 
     // get the caprice channels
     let (tx, rx, handle) = caprice.run().unwrap();

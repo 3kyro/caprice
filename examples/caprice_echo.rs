@@ -2,16 +2,17 @@ use caprice::{Caprice, CapriceCommand};
 use std::thread;
 use std::time::Duration;
 fn main() {
-    let mut caprice = Caprice::new()
+    let caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+        .set_keywords(&[
+            // set some tokens
+            "some_token".to_owned(),
+            "some_other_token".to_owned(),
+            "exit".to_owned(), // an exit keyword
+        ])
         .init(); // initialises the caprice terminal
-                 // set some tokens
-    caprice.set_keywords(&[
-        "some_token".to_owned(),
-        "some_other_token".to_owned(),
-        "exit".to_owned(), // an exit keyword
-    ]);
+
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
     // to caprice

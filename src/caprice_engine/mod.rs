@@ -42,8 +42,22 @@ impl Executor {
         }
     }
 
+    fn get_alphabetic_keywords(keywords: &[String]) -> Vec<String> {
+        keywords
+            .iter()
+            .filter(|keyword| {
+                if let Some(head) = keyword.chars().take(1).next() {
+                    head.is_alphabetic()
+                } else {
+                    false
+                }
+            })
+            .map(|s| s.clone())
+            .collect()
+    }
+
     pub(crate) fn set_keywords(&mut self, keywords: &[String]) {
-        self.keywords = keywords.to_owned();
+        self.keywords = Executor::get_alphabetic_keywords(keywords);
         self.keywords.sort();
     }
 
@@ -228,5 +242,29 @@ impl Executor {
         print!("{}", msg);
         self.terminal.goto_next_line()?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn filter_keywords() {
+        let empty_keywords: Vec<String> = Vec::new();
+        let filtered = Executor::get_alphabetic_keywords(&empty_keywords);
+        assert!(filtered.is_empty());
+
+        let empty_string_keywords: Vec<String> = vec!["".to_owned()];
+        let filtered = Executor::get_alphabetic_keywords(&empty_string_keywords);
+        assert!(filtered.is_empty());
+
+        let alphabetic_keywords: Vec<String> = vec!["one".to_owned(), "two".to_owned(), "three".to_owned()];
+        let filtered = Executor::get_alphabetic_keywords(&alphabetic_keywords);
+        assert_eq!(alphabetic_keywords, filtered);
+
+        let mixed_keywords: Vec<String> = vec!["".to_owned(),"one".to_owned(), "2".to_owned(), "two".to_owned(), "three".to_owned(), "_four".to_owned()];
+        let filtered = Executor::get_alphabetic_keywords(&mixed_keywords);
+        assert_eq!(alphabetic_keywords, filtered);
     }
 }
