@@ -70,7 +70,7 @@ impl Executor {
         self.clear_prompt()
     }
 
-    pub(crate) fn clear_prompt(&mut self) -> Result <()> {
+    pub(crate) fn clear_prompt(&mut self) -> Result<()> {
         self.terminal.clear_from_cursor()?;
         self.autocomplete.reset_tabbed();
         Ok(())
@@ -211,7 +211,7 @@ impl Executor {
             if count == num_per_line {
                 self.terminal.goto_next_line()?;
                 count = 0;
-            }   
+            }
         }
         self.terminal.restore_cursor()?;
         self.terminal.goto_begining_of_line()?;
