@@ -67,6 +67,10 @@ impl Executor {
 
     pub(crate) fn reset_prompt(&mut self) -> Result<()> {
         print!("{} ", self.prompt);
+        self.clear_prompt()
+    }
+
+    pub(crate) fn clear_prompt(&mut self) -> Result <()> {
         self.terminal.clear_from_cursor()?;
         self.autocomplete.reset_tabbed();
         Ok(())
@@ -81,7 +85,7 @@ impl Executor {
 
         if self.keywords.contains(&token) {
             self.terminal.goto_next_line()?;
-            self.reset_prompt()?;
+            self.clear_prompt()?;
             return Ok(Some(token));
         } else if self.commands.contains(&token) {
             self.exec_command(token)?;
@@ -238,9 +242,7 @@ impl Executor {
     }
 
     pub fn print_msg(&self, msg: String) -> Result<()> {
-        self.terminal.goto_next_line()?;
         print!("{}", msg);
-        self.terminal.goto_next_line()?;
         Ok(())
     }
 }
