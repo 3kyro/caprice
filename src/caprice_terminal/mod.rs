@@ -76,6 +76,7 @@ impl TerminalManipulator {
 
     pub(crate) fn disable_raw_screen(&self) -> Result<()> {
         disable_raw_mode()?;
+        execute!(stdout(), LeaveAlternateScreen)?;
         Ok(())
     }
 
