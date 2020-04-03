@@ -9,7 +9,7 @@ use std::time::Duration;
 /// Return type of Caprice::run
 /// Sender can be used to send commands to the caprice repl
 /// Receiver can be used to receive the keywords typed by the user
-/// Handle can be used to join the repl's thread
+/// Handle can be used to join caprices' thread
 pub type CapriceMessage = (
     mpsc::Sender<CapriceCommand>,
     mpsc::Receiver<String>,
@@ -49,8 +49,7 @@ impl Caprice {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    /// However, it will check that the keywords start with an alphabetic character
-    /// and will return None otherwise
+    /// This method will only include keywords start with an alphabetic character
     pub fn set_keywords(mut self, keywords: &[String]) -> Self {
         self.executor.set_keywords(keywords);
         self
@@ -153,7 +152,7 @@ impl Caprice {
         (tx_stop, rx_token)
     }
 
-    // Enables RawScreen. Raw screen is enabled by default during the caprice's object creation
+    // Enables RawScreen. Raw screen is enabled by default during caprice's creation
     fn enable_raw_screen(mut self) -> Self {
         self.terminal
             .enable_raw_screen()
