@@ -1,6 +1,6 @@
 // cargo run --example spinning_square
 //
-// The turorial is based entirely on the spinning square tutorial
+// The tutorial is based entirely on the spinning square tutorial
 // from the Piston Game Engine
 // https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/getting-started
 extern crate graphics;

@@ -16,7 +16,7 @@
 //!         "some_other_token".to_owned(),
 //!         "exit".to_owned(), // an exit keyword
 //!     ])
-//!     .init(); // initialises the caprice terminal
+//!     .init(); // initializes the caprice terminal
 //!
 //! // caprice.run() will execute the repl in a separate thread.
 //! // You can use the returned tx and rx channels for receiving and sending messages
@@ -31,10 +31,10 @@
 //!     // check if we received a token from caprice
 //!     if let Ok(token) = rx.try_recv() {
 //!         match token.as_str() {
-//!             // leave if the user types exit    
+//!             // leave if the user types exit
 //!             "exit" => {
 //!                 // print a message to the screen before exiting
-//!                 tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();  
+//!                 tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
 //!                 // send an exit command
 //!                 tx.send(CapriceCommand::Exit).unwrap();
 //!                 handle.join().expect("couldn't join thread").expect("Caprice run has encountered an error");
@@ -45,7 +45,7 @@
 //!                 let print_token = format!("Got {} from Caprice.", token);
 //!                 tx.send(CapriceCommand::Println(print_token)).unwrap();
 //!             }
-//!         }   
+//!         }
 //!     }
 //!     // let the thread sleep for some time
 //!     thread::sleep(Duration::from_millis(10));

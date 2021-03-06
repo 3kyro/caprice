@@ -24,9 +24,9 @@ impl std::error::Error for CapriceError {
 impl Display for CapriceError {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self {
-            CapriceError::CrosstermError(e) => write!(fmt, "Terminal error occured: {}", e),
+            CapriceError::CrosstermError(e) => write!(fmt, "Terminal error occurred: {}", e),
             CapriceError::Io(e) => write!(fmt, "IO-error occurred: {}", e),
-            CapriceError::SendErr(e) => write!(fmt, "Send error occured: {}", e),
+            CapriceError::SendErr(e) => write!(fmt, "Send error occurred: {}", e),
         }
     }
 }

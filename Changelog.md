@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Scrolling behaviour in windows terminals
+- Scrolling behavior in windows terminals
 
 ### Security
 

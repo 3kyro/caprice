@@ -85,7 +85,7 @@ impl TerminalManipulator {
         Ok(())
     }
 
-    pub(crate) fn goto_begining_of_line(&mut self) -> Result<()> {
+    pub(crate) fn goto_beginning_of_line(&mut self) -> Result<()> {
         execute!(stdout(), MoveLeft(cursor::position()?.0))?;
         Ok(())
     }

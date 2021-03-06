@@ -30,7 +30,7 @@ impl Autocomplete {
     pub(crate) fn amortisize(&mut self) {
         // get the length of the longest word in similar
         if let Some(max_len) = self.keywords.iter().map(|x| x.len()).max() {
-            // amortisize the length of every keyword to the longest one
+            // amortise the length of every keyword to the longest one
             for word in self.keywords.iter_mut() {
                 for _ in 0..max_len - word.len() {
                     word.push(' ');
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn autocomplete_returns_as_expected() {
-        // returns correclty empty sets
+        // correctly returns empty sets
         let word = "some_word".to_owned();
         let keywords = vec![
             "non".to_owned(),
@@ -197,7 +197,7 @@ mod tests {
         assert_eq!(autocompleted.get_keywords(), &Vec::<String>::new());
         assert_eq!(autocompleted.get_common(), &String::new());
 
-        // returns correclty full sets with full word
+        // returns correctly full sets with full word
         let word = "some_word".to_owned();
         let keywords = vec![
             "some_word".to_owned(),
@@ -219,7 +219,7 @@ mod tests {
         );
         assert_eq!(autocompleted.get_common(), &"some_word".to_owned());
 
-        // returns correclty full sets with one or more char
+        // returns correctly full sets with one or more char
         let word = "s".to_owned();
         let keywords = vec![
             "some_word".to_owned(),
@@ -241,7 +241,7 @@ mod tests {
         );
         assert_eq!(autocompleted.get_common(), &"some_word".to_owned());
 
-        // returns correclty sets
+        // returns correctly sets
         let word = "s".to_owned();
         let keywords = vec![
             "some_word".to_owned(),
@@ -255,7 +255,7 @@ mod tests {
         );
         assert_eq!(autocompleted.get_common(), &"some_".to_owned());
 
-        // returns correclty sets
+        // returns correctly sets
         let word = "some_w".to_owned();
         let keywords = vec![
             "some_word".to_owned(),
@@ -268,8 +268,8 @@ mod tests {
     }
 
     #[test]
-    fn amortised() {
-        // normal consditions
+    fn amortized() {
+        // normal conditions
         let vec = vec!["_a".to_owned(), "_ab".to_owned(), "_abc".to_owned()];
         let word = "_".to_owned();
         let mut autocomplete = Autocomplete::new();

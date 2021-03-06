@@ -89,7 +89,7 @@ impl Executor {
             return Ok(Some(token));
         } else if self.commands.contains(&token) {
             self.exec_command(token)?;
-            self.terminal.goto_begining_of_line()?;
+            self.terminal.goto_beginning_of_line()?;
             self.reset_prompt()?;
         } else {
             self.terminal.goto_next_line()?;
@@ -108,7 +108,7 @@ impl Executor {
             self.terminal.goto_next_line()?;
             for token in self.keywords.iter() {
                 println!("{}", token);
-                self.terminal.goto_begining_of_line()?;
+                self.terminal.goto_beginning_of_line()?;
             }
         }
 
@@ -186,7 +186,7 @@ impl Executor {
             self.terminal.scroll_up(needed_lines - distance_to_end)?;
         }
 
-        self.terminal.goto_begining_of_line()?;
+        self.terminal.goto_beginning_of_line()?;
         self.terminal.save_cursor()?;
         self.terminal.goto_next_line()?;
 
@@ -214,7 +214,7 @@ impl Executor {
             }
         }
         self.terminal.restore_cursor()?;
-        self.terminal.goto_begining_of_line()?;
+        self.terminal.goto_beginning_of_line()?;
 
         if let Some(keyword) = self.autocomplete.get_keywords().get(idx) {
             let keyword = keyword.trim_end();

@@ -55,9 +55,9 @@ impl Caprice {
         self
     }
 
-    /// Initialises the caprice repl.
+    /// Initializes the caprice repl.
     /// This function should be the last one called in the
-    /// caprice object's contruction chain
+    /// caprice object's construction chain
     ///
     /// # Example
     /// ```rust, no_run
@@ -66,13 +66,13 @@ impl Caprice {
     /// let mut caprice = Caprice::new()
     ///     .set_prompt("!:") // set the prompt
     ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
-    ///     .init(); // initialises the caprice terminal
+    ///     .init(); // initializes the caprice terminal
     /// ```
     pub fn init(mut self) -> Self {
         if self.executor.reset_prompt().is_ok() {
             self
         } else {
-            panic!("Caprice: Error initialising prompt");
+            panic!("Caprice: Error initializing prompt");
         }
     }
 
@@ -107,7 +107,7 @@ impl Caprice {
     pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
 
-        let tx = self.tx_out.clone().expect("Caprice: Uninitialised Chanels");
+        let tx = self.tx_out.clone().expect("Caprice: Uninitialized channels");
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
