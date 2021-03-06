@@ -4,8 +4,9 @@ use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
 use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
 
+#[derive(Debug)]
 pub(crate) struct Executor {
-    terminal: TerminalManipulator,
+    pub(crate) terminal: TerminalManipulator,
     pub(crate) scanner: Scanner,
     autocomplete: Autocomplete,
     keywords: Vec<String>,
@@ -27,7 +28,6 @@ impl Executor {
 
     pub(crate) fn poll(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
-
         if let Some(input_event) = self.terminal.next_key_event()? {
             match self.scanner.scan(input_event) {
                 TokenType::Token(token) => self.exec_token(token),
@@ -119,7 +119,6 @@ impl Executor {
     pub(crate) fn exec_exit(&mut self) -> Result<Option<String>> {
         self.terminal.clear_from_cursor()?;
         self.terminal.flush()?;
-        self.terminal.disable_raw_screen()?;
         self.terminal.exit();
         Ok(None)
     }

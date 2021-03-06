@@ -9,6 +9,7 @@ pub(crate) enum TokenType {
     None,
 }
 
+#[derive(Debug)]
 pub(crate) struct Scanner {
     buffer: String,
     pub(crate) enable_ctrl_c: bool,

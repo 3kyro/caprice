@@ -2,6 +2,7 @@ use crate::caprice_error::Result;
 use crate::caprice_terminal::TerminalManipulator;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
+#[derive(Debug)]
 pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
@@ -67,7 +68,7 @@ impl<'a> Autocomplete {
     pub(crate) fn update(&mut self, word: &'a str, keywords: &'a [String]) {
         let mut similar: Vec<String>;
 
-        // do not return anything until word is atleast one char long
+        // do not return anything until word is at least one char long
         if word.is_empty() {
             self.keywords = Vec::with_capacity(0);
             self.common = String::new();

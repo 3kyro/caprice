@@ -11,13 +11,18 @@ use std::time::Duration;
 
 use std::io::{stdout, Stdout, Write};
 
+#[derive(Debug)]
 pub(super) struct TerminalManipulator {
     stdout: Stdout,
+    alternate_screen: AlternateScreen,
 }
 
 impl TerminalManipulator {
     pub(super) fn new() -> Self {
-        TerminalManipulator { stdout: stdout() }
+        TerminalManipulator {
+            stdout: stdout(),
+            alternate_screen: AlternateScreen::Disabled,
+        }
     }
 
     pub(super) fn next_key_event(&mut self) -> Result<Option<Event>> {
@@ -57,7 +62,7 @@ impl TerminalManipulator {
         Ok(())
     }
 
-    pub(super) fn enable_raw_screen(&mut self) -> Result<()> {
+    pub(super) fn enable_raw_mode(&mut self) -> Result<()> {
         enable_raw_mode()?;
         Ok(())
     }
@@ -65,18 +70,18 @@ impl TerminalManipulator {
     pub(super) fn enable_alternate_screen(&mut self) -> Result<()> {
         execute!(stdout(), EnterAlternateScreen)?;
         execute!(stdout(), MoveTo(0, 0))?;
+        self.alternate_screen = AlternateScreen::Enabled;
         Ok(())
     }
 
     pub(super) fn disable_alternate_screen(&mut self) -> Result<()> {
         execute!(stdout(), LeaveAlternateScreen)?;
-        execute!(stdout(), MoveTo(0, 0))?;
+        self.alternate_screen = AlternateScreen::Disabled;
         Ok(())
     }
 
-    pub(crate) fn disable_raw_screen(&self) -> Result<()> {
+    pub(crate) fn disable_raw_mode(&self) -> Result<()> {
         disable_raw_mode()?;
-        execute!(stdout(), LeaveAlternateScreen)?;
         Ok(())
     }
 
@@ -119,7 +124,18 @@ impl TerminalManipulator {
         Ok(())
     }
 
-    pub(crate) fn exit(&self) {
+    pub(crate) fn exit(&mut self) {
+        match self.alternate_screen {
+            AlternateScreen::Enabled => self.disable_alternate_screen().unwrap(),
+            AlternateScreen::Disabled => (),
+        }
+        self.disable_raw_mode().unwrap();
         std::process::exit(0);
     }
+}
+
+#[derive(Debug)]
+enum AlternateScreen {
+    Disabled,
+    Enabled,
 }
