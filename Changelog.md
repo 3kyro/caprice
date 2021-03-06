@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- move to Crossterm 0.17.1
-
 ### Fixed
 
 - Fixed an extra empty line in terminal after a token is entered by the user
