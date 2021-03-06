@@ -100,15 +100,11 @@ impl Executor {
     }
 
     fn exec_command(&mut self, command: String) -> Result<()> {
-        if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            self.scanner.update_buffer(buffer);
-        }
-
         if command == "/list" {
             self.terminal.goto_next_line()?;
             for token in self.keywords.iter() {
-                println!("{}", token);
-                self.terminal.goto_beginning_of_line()?;
+                print!("{}", token);
+                self.terminal.goto_next_line()?;
             }
         }
 
