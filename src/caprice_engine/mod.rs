@@ -240,8 +240,10 @@ impl Executor {
         Ok(None)
     }
 
-    pub fn print_msg(&self, msg: String) -> Result<()> {
+    pub fn print_msg(&mut self, msg: String) -> Result<()> {
         print!("{}", msg);
+        self.terminal.goto_next_line()?;
+        self.reset_prompt()?;
         Ok(())
     }
 }
