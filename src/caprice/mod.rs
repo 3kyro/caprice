@@ -107,7 +107,10 @@ impl Caprice {
     pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
 
-        let tx = self.tx_out.clone().expect("Caprice: Uninitialized channels");
+        let tx = self
+            .tx_out
+            .clone()
+            .expect("Caprice: Uninitialized channels");
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
