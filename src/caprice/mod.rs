@@ -17,7 +17,9 @@ pub type CapriceMessage = (
 
 /// Commands that can be sent to the Caprice repl by the invoking application
 pub enum CapriceCommand {
+    /// Print the provided string
     Println(String),
+    /// Exit the caprice terminal
     Exit,
 }
 

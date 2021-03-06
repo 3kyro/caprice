@@ -9,7 +9,7 @@
 //!
 //! let mut caprice = Caprice::new()
 //!     .set_prompt("!:") // set the prompt
-//!     .enable_alternate_screen() // do not use alternate screen
+//!     .enable_alternate_screen() // use alternate screen
 //!     .disable_ctrl_c() // pressing control+c won't terminate the caprice console
 //!     .set_keywords(&[
 //!         "some_token".to_owned(),
