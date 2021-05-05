@@ -71,12 +71,11 @@ impl Scanner {
 
     pub(crate) fn scan_enter(&mut self) -> TokenType {
         let token = self.buffer.clone();
-        self.buffer.clear();
         TokenType::Token(token)
     }
 
     pub(crate) fn scan_char(&mut self, c: char) -> TokenType {
-        if c.is_alphanumeric() || c == '/' || c == '_' {
+        if c.is_alphanumeric() || c == '/' || c == '_' || c == ' ' {
             self.buffer.push(c);
             TokenType::Continue(self.buffer.clone())
         } else {
@@ -86,5 +85,9 @@ impl Scanner {
 
     pub(crate) fn update_buffer(&mut self, new_buffer: String) {
         self.buffer = new_buffer;
+    }
+
+    pub(crate) fn clear_buffer(&mut self) {
+        self.buffer.clear();
     }
 }

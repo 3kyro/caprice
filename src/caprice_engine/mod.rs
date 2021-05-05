@@ -76,14 +76,19 @@ impl Executor {
         Ok(())
     }
 
-    fn exec_token(&mut self, mut token: String) -> Result<Option<String>> {
-        // if tab suggestions are active, ignore the scanner's token
-        // and use the autocompleted one
+    fn exec_token(&mut self, token: String) -> Result<Option<String>> {
+        // if tab suggestions are active then we stop it
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            token = buffer;
+            self.terminal.clear_from_cursor()?;
+            self.autocomplete.reset_tabbed();
+            self.scanner.update_buffer(buffer);
+            return Ok(None);
         }
 
-        if self.keywords.contains(&token) {
+        // We've committed to this input, clear the scanner
+        self.scanner.clear_buffer();
+
+        if self.keywords.contains(&token) || self.keywords.contains(&token.split(" ").next().unwrap_or_default().to_string()) {
             self.terminal.goto_next_line()?;
             self.clear_prompt()?;
             return Ok(Some(token));
@@ -121,12 +126,15 @@ impl Executor {
 
     fn exec_backspace(&mut self) -> Result<Option<String>> {
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            self.scanner.update_buffer(buffer);
+            let mut updated_buffer = buffer.clone();
+            updated_buffer.pop();
+            self.scanner.update_buffer(updated_buffer);
         }
 
         self.terminal.backspace()?;
 
         self.autocomplete.reset_tabbed();
+        self.terminal.clear_from_cursor()?;
         Ok(None)
     }
 
@@ -219,12 +227,20 @@ impl Executor {
     }
 
     fn exec_valid_char(&mut self, buffer: String) -> Result<Option<String>> {
+        let origin_buffer_char = buffer.clone().pop();
+
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            self.scanner.update_buffer(buffer);
+            if origin_buffer_char.is_some() {
+                self.scanner.update_buffer(format!("{}{}", buffer, origin_buffer_char.unwrap()));
+            }
+            else
+            {
+                self.scanner.update_buffer(buffer);
+            }
         }
 
-        if let Some(c) = buffer.clone().pop() {
-            print!("{}", c);
+        if origin_buffer_char.is_some() {
+            print!("{}", origin_buffer_char.unwrap());
         }
 
         self.autocomplete.update(&buffer, &self.keywords);
