@@ -23,20 +23,25 @@ fn main() {
     loop {
         // if we received a token from caprice
         if let Ok(token) = rx.try_recv() {
-            match token.as_str() {
-                // leave if the user types exit
-                "exit" => {
-                    tx.send(CapriceCommand::Exit).unwrap();
-                    caprice_handle
-                        .join()
-                        .expect("couldn't join thread")
-                        .expect("Caprice run has encountered an error");
-                    break; // at this point caprice has already exited, let the main process do as well
-                }
-                // else send back the token to be printed
-                _ => {
-                    let print_token = format!("Got {} from Caprice", token);
-                    tx.send(CapriceCommand::Println(print_token)).unwrap();
+            // token can contain arguments, split on a ' '
+            let mut args = token.as_str().trim_end().split(' ');
+
+            if let Some(token) = args.next() {
+                match token {
+                    // leave if the user types exit
+                    "exit" => {
+                        tx.send(CapriceCommand::Exit).unwrap();
+                        caprice_handle
+                            .join()
+                            .expect("couldn't join thread")
+                            .expect("Caprice run has encountered an error");
+                        break; // at this point caprice has already exited, let the main process do as well
+                    }
+                    // else send back the token to be printed
+                    _ => {
+                        let print_token = format!("Got {}({}) from Caprice", token, args.collect::<Vec<&str>>().join(", "));
+                        tx.send(CapriceCommand::Println(print_token)).unwrap();
+                    }
                 }
             }
         }
