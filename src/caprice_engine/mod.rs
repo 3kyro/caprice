@@ -52,7 +52,7 @@ impl Executor {
                     false
                 }
             })
-            .map(|s| s.clone())
+            .cloned()
             .collect()
     }
 
@@ -91,7 +91,7 @@ impl Executor {
         if self.keywords.contains(&token)
             || self
                 .keywords
-                .contains(&token.split(" ").next().unwrap_or_default().to_string())
+                .contains(&token.split(' ').next().unwrap_or_default().to_string())
         {
             self.terminal.goto_next_line()?;
             self.clear_prompt()?;
@@ -130,7 +130,7 @@ impl Executor {
 
     fn exec_backspace(&mut self) -> Result<Option<String>> {
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            let mut updated_buffer = buffer.clone();
+            let mut updated_buffer = buffer;
             updated_buffer.pop();
             self.scanner.update_buffer(updated_buffer);
         }
