@@ -39,7 +39,11 @@ fn main() {
                     }
                     // else send back the token to be printed
                     _ => {
-                        let print_token = format!("Got {}({}) from Caprice", token, args.collect::<Vec<&str>>().join(", "));
+                        let print_token = format!(
+                            "Got {}({}) from Caprice",
+                            token,
+                            args.collect::<Vec<&str>>().join(", ")
+                        );
                         tx.send(CapriceCommand::Println(print_token)).unwrap();
                     }
                 }

@@ -88,7 +88,11 @@ impl Executor {
         // We've committed to this input, clear the scanner
         self.scanner.clear_buffer();
 
-        if self.keywords.contains(&token) || self.keywords.contains(&token.split(" ").next().unwrap_or_default().to_string()) {
+        if self.keywords.contains(&token)
+            || self
+                .keywords
+                .contains(&token.split(" ").next().unwrap_or_default().to_string())
+        {
             self.terminal.goto_next_line()?;
             self.clear_prompt()?;
             return Ok(Some(token));
@@ -231,10 +235,9 @@ impl Executor {
 
         if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
             if origin_buffer_char.is_some() {
-                self.scanner.update_buffer(format!("{}{}", buffer, origin_buffer_char.unwrap()));
-            }
-            else
-            {
+                self.scanner
+                    .update_buffer(format!("{}{}", buffer, origin_buffer_char.unwrap()));
+            } else {
                 self.scanner.update_buffer(buffer);
             }
         }
