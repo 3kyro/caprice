@@ -12,7 +12,7 @@ jobs:
     - name: Check Formatting
       run: cargo fmt --all -- --check
     - name: Check lint
-      run: cargo clippy
+      run: cargo clippy -- --deny clippy::all
     - name: Build
       run: cargo build
     - name: Run tests
