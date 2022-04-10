@@ -66,8 +66,6 @@ impl<'a> Autocomplete {
     // takes a word and a slice of keywords and returns the sub set of the collection that starts
     // with the word and the biggest common starting str of this collection (or None if this doesn't exist)
     pub(crate) fn update(&mut self, word: &'a str, keywords: &'a [String]) {
-        let mut similar: Vec<String>;
-
         // do not return anything until word is at least one char long
         if word.is_empty() {
             self.keywords = Vec::with_capacity(0);
@@ -75,7 +73,7 @@ impl<'a> Autocomplete {
             return;
         }
 
-        similar = keywords
+        let mut similar: Vec<String> = keywords
             .iter()
             .filter(|x| x.starts_with(word))
             .cloned()
@@ -91,11 +89,9 @@ impl<'a> Autocomplete {
 
     pub(crate) fn get_current_tabbed_autocomplete(&self) -> Option<String> {
         if self.tabbed {
-            if let Some(keyword) = self.keywords.get(self.tabbed_idx) {
-                Some(keyword.clone().trim_end().to_string())
-            } else {
-                None
-            }
+            self.keywords
+                .get(self.tabbed_idx)
+                .map(|keyword| keyword.clone().trim_end().to_string())
         } else {
             None
         }
@@ -129,10 +125,10 @@ impl<'a> Autocomplete {
 
 // returns the common str slice of a collection of str slices
 // returns None if no common slice can be found
-fn return_common_str_from_sorted_collection(collection: &mut Vec<String>) -> Option<String> {
+fn return_common_str_from_sorted_collection(collection: &mut [String]) -> Option<String> {
     // take the first element of the sorted list and check if the rest of the elements start with
     // if not remove last character and repeat
-    let copied_collection = collection.clone();
+    let copied_collection = collection.to_owned();
 
     while let Some(first) = collection.first_mut() {
         if copied_collection
