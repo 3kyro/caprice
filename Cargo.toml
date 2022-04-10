@@ -1,6 +1,6 @@
 [package]
 name = "caprice"
-description = "A Repl for Rust projects featuring an easy to use, zsh like autocomplete feature."
+description = "A REPL for Rust projects featuring an easy to use, zsh like autocomplete feature."
 repository = "https://github.com/3kyro/caprice.git"
 license = "MIT"
 keywords = ["REPL", "autocomplete", "zsh"]

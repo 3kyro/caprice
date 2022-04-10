@@ -6,7 +6,7 @@ use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 /// Return type of Caprice::run
-/// Sender can be used to send commands to the caprice repl
+/// Sender can be used to send commands to the caprice REPL
 /// Receiver can be used to receive the keywords typed by the user
 /// Handle can be used to join caprices' thread
 pub type CapriceMessage = (
@@ -15,7 +15,7 @@ pub type CapriceMessage = (
     JoinHandle<Result<()>>,
 );
 
-/// Commands that can be sent to the Caprice repl by the invoking application
+/// Commands that can be sent to the Caprice REPL by the invoking application
 pub enum CapriceCommand {
     /// Print the provided string
     Println(String),
@@ -23,7 +23,7 @@ pub enum CapriceCommand {
     Exit,
 }
 
-/// The main object of the Caprice repl
+/// The main object of the Caprice REPL
 #[derive(Debug)]
 pub struct Caprice {
     executor: Executor,
@@ -84,7 +84,7 @@ impl Caprice {
         self
     }
 
-    /// Disables exiting the repl when pressing ctrl+c
+    /// Disables exiting the REPL when pressing ctrl+c
     pub fn disable_ctrl_c(mut self) -> Self {
         self.executor.scanner.enable_ctrl_c = false;
         self
@@ -102,7 +102,7 @@ impl Caprice {
         self
     }
 
-    /// Runs the repl in a separate thread returning the transmit and receive channels for message
+    /// Runs the REPL in a separate thread returning the transmit and receive channels for message
     /// passing as well as the thread handle for its manipulation by the parent application
     pub fn run(mut self) -> Result<CapriceMessage> {
         let (tx_stop, rx_token) = self.channels();
