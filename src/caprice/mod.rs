@@ -49,7 +49,7 @@ impl Caprice {
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
     /// This method will only include keywords that start with an alphabetic character
-    pub fn set_keywords(mut self, keywords: &[String]) -> Self {
+    pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
         self.executor.set_keywords(keywords);
         self
     }

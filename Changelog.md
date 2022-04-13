@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Removed `CapriceError::IO`
+- Removed `CapriceError::IO`.
+- Validate keywords. Caprice keywords are now validated against the "^[_a-zA-Z][A-Za-z_0-9]*$" regex.
+- `Caprice::set_keywords()` will now receive a `Vec` of keywords by value.
 
 ## [0.2.5]
 
