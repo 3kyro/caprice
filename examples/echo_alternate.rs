@@ -6,7 +6,7 @@ fn main() {
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
         .enable_alternate_screen()
-        .set_keywords(&[
+        .set_keywords(vec![
             // set some tokens
             "some_token".to_owned(),
             "some_other_token".to_owned(),

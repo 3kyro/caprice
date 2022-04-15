@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0]
+
+### Changed
+
+- Removed `CapriceError::IO`.
+- Validate keywords. Caprice keywords are now validated against the "^[_a-zA-Z][A-Za-z_0-9]*$" regex.
+- `Caprice::set_keywords()` will now receive a `Vec` of keywords by value.
+
 ## [0.2.5]
 
 ### Changed

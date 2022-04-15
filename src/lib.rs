@@ -11,14 +11,14 @@
 //!     .set_prompt("!:") // set the prompt
 //!     .enable_alternate_screen() // use alternate screen
 //!     .disable_ctrl_c() // pressing control+c won't terminate the caprice console
-//!     .set_keywords(&[
+//!     .set_keywords(vec![
 //!         "some_token".to_owned(),
 //!         "some_other_token".to_owned(),
 //!         "exit".to_owned(), // an exit keyword
 //!     ])
 //!     .init(); // initializes the caprice terminal
 //!
-//! // caprice.run() will execute the repl in a separate thread.
+//! // caprice.run() will execute the REPL in a separate thread.
 //! // You can use the returned tx and rx channels for receiving and sending messages
 //! // to caprice and the handle to join Caprice's thread with the main thread.
 //! let (tx,rx, handle) = caprice.run().unwrap();

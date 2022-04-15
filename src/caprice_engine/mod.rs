@@ -3,6 +3,7 @@ use crate::caprice_error::Result;
 use crate::caprice_scanner::{Scanner, TokenType};
 use crate::caprice_terminal::TerminalManipulator;
 use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
+use regex::Regex;
 
 #[derive(Debug)]
 pub(crate) struct Executor {
@@ -42,23 +43,10 @@ impl Executor {
         }
     }
 
-    fn get_alphabetic_keywords(keywords: &[String]) -> Vec<String> {
-        keywords
-            .iter()
-            .filter(|keyword| {
-                if let Some(head) = keyword.chars().take(1).next() {
-                    head.is_alphabetic()
-                } else {
-                    false
-                }
-            })
-            .cloned()
-            .collect()
-    }
-
-    pub(crate) fn set_keywords(&mut self, keywords: &[String]) {
-        self.keywords = Executor::get_alphabetic_keywords(keywords);
-        self.keywords.sort();
+    pub(crate) fn set_keywords(&mut self, keywords: Vec<String>) {
+        let mut valid_keywords = get_valid_keywords(keywords);
+        valid_keywords.sort();
+        self.keywords = valid_keywords
     }
 
     pub(crate) fn set_prompt(&mut self, prompt: &str) {
@@ -263,6 +251,14 @@ impl Executor {
     }
 }
 
+fn get_valid_keywords(keywords: Vec<String>) -> Vec<String> {
+    let re = &Regex::new(r"^[_a-zA-Z][A-Za-z_0-9]*$").unwrap();
+    keywords
+        .into_iter()
+        .filter(|keyword| re.is_match(keyword))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -270,27 +266,28 @@ mod tests {
     #[test]
     fn filter_keywords() {
         let empty_keywords: Vec<String> = Vec::new();
-        let filtered = Executor::get_alphabetic_keywords(&empty_keywords);
+        let filtered = get_valid_keywords(empty_keywords);
         assert!(filtered.is_empty());
 
         let empty_string_keywords: Vec<String> = vec!["".to_owned()];
-        let filtered = Executor::get_alphabetic_keywords(&empty_string_keywords);
+        let filtered = get_valid_keywords(empty_string_keywords);
         assert!(filtered.is_empty());
 
-        let alphabetic_keywords: Vec<String> =
-            vec!["one".to_owned(), "two".to_owned(), "three".to_owned()];
-        let filtered = Executor::get_alphabetic_keywords(&alphabetic_keywords);
-        assert_eq!(alphabetic_keywords, filtered);
+        let valid_keywords: Vec<String> =
+            vec!["one".to_owned(), "_two".to_owned(), "thr3ee".to_owned()];
+        let filtered = get_valid_keywords(valid_keywords.clone());
+        assert_eq!(valid_keywords, filtered);
 
         let mixed_keywords: Vec<String> = vec![
+            "9four".to_owned(),
             "".to_owned(),
+            "invalid#symbol".to_owned(),
             "one".to_owned(),
             "2".to_owned(),
-            "two".to_owned(),
-            "three".to_owned(),
-            "_four".to_owned(),
+            "_two".to_owned(),
+            "thr3ee".to_owned(),
         ];
-        let filtered = Executor::get_alphabetic_keywords(&mixed_keywords);
-        assert_eq!(alphabetic_keywords, filtered);
+        let filtered = get_valid_keywords(mixed_keywords);
+        assert_eq!(valid_keywords, filtered);
     }
 }
