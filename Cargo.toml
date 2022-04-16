@@ -7,7 +7,7 @@ keywords = ["REPL", "autocomplete", "zsh"]
 readme = "readme.md"
 version = "0.3.0"
 authors = ["Kyriakos Papachrysanthou"]
-edition = "2018"
+edition = "2021"
 categories = ["command-line-interface", "command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
