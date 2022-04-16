@@ -7,7 +7,7 @@ pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
     pub(crate) tabbed: bool,
-    tabbed_idx: usize,
+    pub(crate) tab_idx: usize,
 }
 
 impl Autocomplete {
@@ -16,7 +16,7 @@ impl Autocomplete {
             keywords: Vec::new(),
             common: String::new(),
             tabbed: false,
-            tabbed_idx: 0,
+            tab_idx: 0,
         }
     }
 
@@ -43,9 +43,9 @@ impl Autocomplete {
     pub(crate) fn reset_tabbed(&mut self) {
         self.tabbed = false;
         if self.keywords.is_empty() {
-            self.tabbed_idx = 0;
+            self.tab_idx = 0;
         } else {
-            self.tabbed_idx = self.keywords.len() - 1;
+            self.tab_idx = self.keywords.len() - 1;
         }
     }
 
@@ -53,12 +53,8 @@ impl Autocomplete {
     // wrapping around when necessary
     pub(crate) fn incr_idx(&mut self) {
         if !self.keywords.is_empty() {
-            self.tabbed_idx = (self.tabbed_idx + 1) % self.keywords.len();
+            self.tab_idx = (self.tab_idx + 1) % self.keywords.len();
         }
-    }
-
-    pub(crate) fn get_idx(&self) -> usize {
-        self.tabbed_idx
     }
 }
 
@@ -90,7 +86,7 @@ impl<'a> Autocomplete {
     pub(crate) fn get_current_tabbed_autocomplete(&self) -> Option<String> {
         if self.tabbed {
             self.keywords
-                .get(self.tabbed_idx)
+                .get(self.tab_idx)
                 .map(|keyword| keyword.clone().trim_end().to_string())
         } else {
             None
@@ -296,12 +292,12 @@ mod tests {
         let word = "_".to_owned();
         autocomplete.update(&word, &vec);
         autocomplete.incr_idx();
-        assert_eq!(autocomplete.get_idx(), 1);
+        assert_eq!(autocomplete.tab_idx, 1);
         autocomplete.incr_idx();
-        assert_eq!(autocomplete.get_idx(), 2);
+        assert_eq!(autocomplete.tab_idx, 2);
         autocomplete.incr_idx();
-        assert_eq!(autocomplete.get_idx(), 0);
+        assert_eq!(autocomplete.tab_idx, 0);
         autocomplete.incr_idx();
-        assert_eq!(autocomplete.get_idx(), 1);
+        assert_eq!(autocomplete.tab_idx, 1);
     }
 }

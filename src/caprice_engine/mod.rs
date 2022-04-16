@@ -185,7 +185,7 @@ impl Executor {
         self.terminal.save_cursor()?;
         self.terminal.goto_next_line()?;
 
-        let idx = self.autocomplete.get_idx();
+        let idx = self.autocomplete.tab_idx;
 
         let mut count: u16 = 0;
 
