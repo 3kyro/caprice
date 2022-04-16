@@ -28,7 +28,7 @@ impl Autocomplete {
         &self.keywords
     }
 
-    pub(crate) fn amortisize(&mut self) {
+    pub(crate) fn amortize(&mut self) {
         // get the length of the longest word in similar
         if let Some(max_len) = self.keywords.iter().map(|x| x.len()).max() {
             // amortise the length of every keyword to the longest one
@@ -271,19 +271,19 @@ mod tests {
         let word = "_".to_owned();
         let mut autocomplete = Autocomplete::new();
         autocomplete.update(&word, &vec);
-        autocomplete.amortisize();
+        autocomplete.amortize();
         assert_eq!(autocomplete.get_keywords(), &vec!["_a  ", "_ab ", "_abc"]);
 
         // similar length
         let vec = vec!["_aa".to_owned(), "_bb".to_owned(), "_cc".to_owned()];
         autocomplete.update(&word, &vec);
-        autocomplete.amortisize();
+        autocomplete.amortize();
         assert_eq!(autocomplete.get_keywords(), &vec!["_aa", "_bb", "_cc"]);
 
         // empty vec
         let vec = Vec::with_capacity(0);
         autocomplete.update(&word, &vec);
-        autocomplete.amortisize();
+        autocomplete.amortize();
         let return_vec: Vec<String> = Vec::with_capacity(0);
         assert_eq!(autocomplete.get_keywords(), &return_vec);
     }

@@ -155,7 +155,7 @@ impl Executor {
 
         let mut num_per_line: u16;
 
-        self.autocomplete.amortisize();
+        self.autocomplete.amortize();
 
         self.autocomplete.incr_idx();
 
