@@ -19,6 +19,9 @@ pub(super) struct Terminal {
 
 impl Terminal {
     pub(super) fn new() -> Self {
+        // Caprice needs the terminal's raw mode to be enabled
+        enable_raw_mode().expect("Cannot enable terminal raw mode");
+
         Terminal {
             stdout: stdout(),
             alternate_screen: AlternateScreen::Disabled,
@@ -59,11 +62,6 @@ impl Terminal {
 
     pub(super) fn restore_cursor(&self) -> Result<()> {
         execute!(stdout(), RestorePosition)?;
-        Ok(())
-    }
-
-    pub(super) fn enable_raw_mode(&mut self) -> Result<()> {
-        enable_raw_mode()?;
         Ok(())
     }
 

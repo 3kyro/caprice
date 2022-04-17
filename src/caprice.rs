@@ -39,7 +39,6 @@ impl Caprice {
             tx_out: None,
             rx_in: None,
         }
-        .enable_raw_mode()
     }
 
     /// Sets the current active keywords for the parser
@@ -153,15 +152,6 @@ impl Caprice {
         self.rx_in = Some(rx_stop);
 
         (tx_stop, rx_token)
-    }
-
-    // Enables raw mode. Raw mode is enabled by default during caprice's creation
-    fn enable_raw_mode(mut self) -> Self {
-        self.executor
-            .terminal
-            .enable_raw_mode()
-            .expect("Caprice: Error enabling raw terminal mode");
-        self
     }
 }
 /// Ensures the process exits gracefully, returning the terminal to its
