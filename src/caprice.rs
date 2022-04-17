@@ -23,36 +23,12 @@ pub enum CapriceCommand {
     Exit,
 }
 
-/// The main object of the Caprice REPL
-#[derive(Debug)]
-pub struct Caprice {
-    executor: Executor,
-    tx_out: Option<mpsc::Sender<String>>,
-    rx_in: Option<mpsc::Receiver<CapriceCommand>>,
+/// Builds and initializes the caprice terminal
+pub struct CapriceBuilder {
+    caprice: Caprice,
 }
 
-impl Caprice {
-    /// Creates a new Caprice object.
-    pub fn new() -> Self {
-        Caprice {
-            executor: Executor::new(),
-            tx_out: None,
-            rx_in: None,
-        }
-    }
-
-    /// Sets the current active keywords for the parser
-    ///
-    /// ## Note
-    /// This method __will not__ check for the length of the provided keywords,
-    /// nor if these keywords can be correctly displayed in all supported
-    /// terminals.
-    /// This method will only include keywords that start with an alphabetic character
-    pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
-        self.executor.set_keywords(keywords);
-        self
-    }
-
+impl CapriceBuilder {
     /// Initializes the caprice REPL.
     /// This function should be the last one called in the
     /// caprice object's construction chain
@@ -66,17 +42,30 @@ impl Caprice {
     ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
     ///     .init(); // initializes the caprice terminal
     /// ```
-    pub fn init(mut self) -> Self {
-        if self.executor.reset_prompt().is_ok() {
-            self
+    pub fn init(mut self) -> Caprice {
+        if self.caprice.executor.reset_prompt().is_ok() {
+            self.caprice
         } else {
             panic!("Caprice: Error initializing prompt");
         }
     }
 
+    /// Sets the current active keywords for the parser
+    ///
+    /// ## Note
+    /// This method __will not__ check for the length of the provided keywords,
+    /// nor if these keywords can be correctly displayed in all supported
+    /// terminals.
+    /// This method will only include keywords that start with an alphabetic character
+    pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
+        self.caprice.executor.set_keywords(keywords);
+        self
+    }
+
     /// Enables Alternate Screen rendering
     pub fn enable_alternate_screen(mut self) -> Self {
-        self.executor
+        self.caprice
+            .executor
             .terminal
             .enable_alternate_screen()
             .expect("Caprice: Error enabling alternate screen");
@@ -85,7 +74,7 @@ impl Caprice {
 
     /// Disables exiting the REPL when pressing ctrl+c
     pub fn disable_ctrl_c(mut self) -> Self {
-        self.executor.scanner.enable_ctrl_c = false;
+        self.caprice.executor.scanner.enable_ctrl_c = false;
         self
     }
 
@@ -97,8 +86,30 @@ impl Caprice {
     /// terminals.
     ///
     pub fn set_prompt(mut self, prompt: &str) -> Self {
-        self.executor.set_prompt(prompt);
+        self.caprice.executor.set_prompt(prompt);
         self
+    }
+}
+
+/// The main object of the Caprice REPL
+#[derive(Debug)]
+pub struct Caprice {
+    executor: Executor,
+    tx_out: Option<mpsc::Sender<String>>,
+    rx_in: Option<mpsc::Receiver<CapriceCommand>>,
+}
+
+impl Caprice {
+    #![allow(clippy::new_ret_no_self)]
+    /// Creates a new Caprice object.
+    pub fn new() -> CapriceBuilder {
+        CapriceBuilder {
+            caprice: Caprice {
+                executor: Executor::new(),
+                tx_out: None,
+                rx_in: None,
+            },
+        }
     }
 
     /// Runs the REPL in a separate thread returning the transmit and receive channels for message
@@ -154,6 +165,7 @@ impl Caprice {
         (tx_stop, rx_token)
     }
 }
+
 /// Ensures the process exits gracefully, returning the terminal to its
 /// original state
 impl Drop for Caprice {
@@ -163,11 +175,5 @@ impl Drop for Caprice {
         self.executor.terminal.clear_from_cursor().unwrap();
         self.executor.terminal.flush().unwrap();
         self.executor.terminal.disable_raw_mode().unwrap();
-    }
-}
-
-impl Default for Caprice {
-    fn default() -> Self {
-        Self::new()
     }
 }
