@@ -1,13 +1,13 @@
-use crate::caprice_autocomplete::Autocomplete;
-use crate::caprice_error::Result;
-use crate::caprice_scanner::{Scanner, TokenType};
-use crate::caprice_terminal::TerminalManipulator;
+use crate::autocomplete::Autocomplete;
+use crate::error::Result;
+use crate::scanner::{Scanner, TokenType};
+use crate::terminal::Terminal;
 use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
 use regex::Regex;
 
 #[derive(Debug)]
 pub(crate) struct Executor {
-    pub(crate) terminal: TerminalManipulator,
+    pub(crate) terminal: Terminal,
     pub(crate) scanner: Scanner,
     autocomplete: Autocomplete,
     keywords: Vec<String>,
@@ -18,7 +18,7 @@ pub(crate) struct Executor {
 impl Executor {
     pub(crate) fn new() -> Self {
         Executor {
-            terminal: TerminalManipulator::new(),
+            terminal: Terminal::new(),
             scanner: Scanner::new(),
             autocomplete: Autocomplete::new(),
             keywords: Vec::new(),

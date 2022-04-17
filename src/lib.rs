@@ -52,11 +52,11 @@
 //! }
 //! ```
 
+mod autocomplete;
 pub mod caprice;
-mod caprice_autocomplete;
-mod caprice_engine;
-pub mod caprice_error;
-mod caprice_scanner;
-mod caprice_terminal;
+mod engine;
+pub mod error;
+mod scanner;
+mod terminal;
 pub use self::caprice::Caprice;
 pub use self::caprice::CapriceCommand;

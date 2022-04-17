@@ -1,4 +1,4 @@
-use crate::caprice_error::Result;
+use crate::error::Result;
 use crossterm::cursor::{self, MoveLeft, MoveTo, RestorePosition, SavePosition};
 use crossterm::event;
 use crossterm::event::Event;
@@ -12,14 +12,14 @@ use std::time::Duration;
 use std::io::{stdout, Stdout, Write};
 
 #[derive(Debug)]
-pub(super) struct TerminalManipulator {
+pub(super) struct Terminal {
     stdout: Stdout,
     alternate_screen: AlternateScreen,
 }
 
-impl TerminalManipulator {
+impl Terminal {
     pub(super) fn new() -> Self {
-        TerminalManipulator {
+        Terminal {
             stdout: stdout(),
             alternate_screen: AlternateScreen::Disabled,
         }

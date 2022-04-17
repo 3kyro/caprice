@@ -1,5 +1,5 @@
-use crate::caprice_error::Result;
-use crate::caprice_terminal::TerminalManipulator;
+use crate::error::Result;
+use crate::terminal::Terminal;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
 #[derive(Debug)]
@@ -97,7 +97,7 @@ impl<'a> Autocomplete {
     pub(crate) fn print_same_line_autocompleted(
         &self,
         buffer: &str,
-        terminal: &TerminalManipulator,
+        terminal: &Terminal,
     ) -> Result<()> {
         if !self.common.is_empty() {
             terminal.save_cursor()?;

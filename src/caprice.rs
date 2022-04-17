@@ -1,5 +1,5 @@
-use crate::caprice_engine::Executor;
-use crate::caprice_error::Result;
+use crate::engine::Executor;
+use crate::error::Result;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
