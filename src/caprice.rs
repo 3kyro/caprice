@@ -118,11 +118,18 @@ impl Caprice {
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
-                if let Some(keyword) = self.eval()? {
+                // The caprice thread blocks on the terminal executor.
+                // If a token is received, proceed to handling the host app's
+                // response.
+                if let Some(keyword) = self.executor.get_next_key_event()? {
                     tx_keyword.send(keyword)?;
+                } else {
+                    // If no token is received wait for the next terminal event.
+                    continue;
                 }
 
-                if let Ok(command) = rx_command.try_recv() {
+                // Blocks for command
+                if let Ok(command) = rx_command.recv() {
                     match command {
                         CapriceCommand::Println(msg) => {
                             self.executor.print_msg(msg)?;
@@ -130,18 +137,15 @@ impl Caprice {
                         CapriceCommand::Exit => {
                             self.executor.exec_exit()?;
                             return Ok(());
-                        }
+                        },
                         CapriceCommand::Continue => continue,
                     }
+
                 }
             }
         });
 
         Ok((tx_command, rx_keyword, handle))
-    }
-
-    fn eval(&mut self) -> Result<Option<String>> {
-        self.executor.poll()
     }
 }
 

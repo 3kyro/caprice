@@ -7,7 +7,6 @@ use crossterm::terminal::{
     LeaveAlternateScreen,
 };
 use crossterm::{execute, ExecutableCommand};
-use std::time::Duration;
 
 use std::io::{stdout, Stdout, Write};
 
@@ -28,12 +27,8 @@ impl Terminal {
         }
     }
 
-    pub(super) fn next_key_event(&mut self) -> Result<Option<Event>> {
-        if event::poll(Duration::from_millis(10))? {
-            Ok(Some(event::read()?))
-        } else {
-            Ok(None)
-        }
+    pub(super) fn next_key_event(&mut self) -> Result<Event> {
+        Ok(event::read()?)
     }
 
     pub(super) fn clear_from_cursor(&self) -> Result<()> {
