@@ -12,7 +12,7 @@ pub(crate) struct Executor {
     autocomplete: Autocomplete,
     keywords: Vec<String>,
     commands: Vec<String>,
-    prompt: String,
+    pub(crate) prompt: &'static str,
 }
 
 impl Executor {
@@ -23,7 +23,7 @@ impl Executor {
             autocomplete: Autocomplete::new(),
             keywords: Vec::new(),
             commands: vec!["/list".to_owned()],
-            prompt: "!:".to_owned(),
+            prompt: "!:",
         }
     }
 
@@ -47,10 +47,6 @@ impl Executor {
         let mut valid_keywords = get_valid_keywords(keywords);
         valid_keywords.sort();
         self.keywords = valid_keywords
-    }
-
-    pub(crate) fn set_prompt(&mut self, prompt: &str) {
-        self.prompt = prompt.to_owned();
     }
 
     pub(crate) fn reset_prompt(&mut self) -> Result<()> {

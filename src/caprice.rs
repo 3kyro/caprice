@@ -85,8 +85,8 @@ impl CapriceBuilder {
     /// nor if this prompt can be correctly displayed in all supported
     /// terminals.
     ///
-    pub fn set_prompt(mut self, prompt: &str) -> Self {
-        self.caprice.executor.set_prompt(prompt);
+    pub fn set_prompt(mut self, prompt: &'static str) -> Self {
+        self.caprice.executor.prompt = prompt;
         self
     }
 }
