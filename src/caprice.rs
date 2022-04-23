@@ -3,7 +3,6 @@ use crate::error::Result;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
-use std::time::Duration;
 
 /// Return type of Caprice::run
 /// Sender can be used to send commands to the caprice REPL
@@ -95,8 +94,6 @@ impl CapriceBuilder {
 #[derive(Debug)]
 pub struct Caprice {
     executor: Executor,
-    tx_out: Option<mpsc::Sender<String>>,
-    rx_in: Option<mpsc::Receiver<CapriceCommand>>,
 }
 
 impl Caprice {
@@ -106,8 +103,6 @@ impl Caprice {
         CapriceBuilder {
             caprice: Caprice {
                 executor: Executor::new(),
-                tx_out: None,
-                rx_in: None,
             },
         }
     }
@@ -115,54 +110,34 @@ impl Caprice {
     /// Runs the REPL in a separate thread returning the transmit and receive channels for message
     /// passing as well as the thread handle for its manipulation by the parent application
     pub fn run(mut self) -> Result<CapriceMessage> {
-        let (tx_stop, rx_token) = self.channels();
-
-        let tx = self
-            .tx_out
-            .clone()
-            .expect("Caprice: Uninitialized channels");
+        let (tx_keyword, rx_keyword) = mpsc::channel();
+        let (tx_command, rx_command) = mpsc::channel();
 
         let handle = thread::spawn(move || -> Result<()> {
             loop {
-                // give the cpu some time
-                thread::sleep(Duration::from_millis(10));
-
                 if let Some(keyword) = self.eval()? {
-                    tx.send(keyword)?;
+                    tx_keyword.send(keyword)?;
                 }
 
-                if let Some(rx) = &self.rx_in {
-                    if let Ok(command) = rx.try_recv() {
-                        match command {
-                            CapriceCommand::Println(msg) => {
-                                self.executor.print_msg(msg)?;
-                            }
-                            CapriceCommand::Exit => {
-                                self.executor.exec_exit()?;
-                                return Ok(());
-                            }
+                if let Ok(command) = rx_command.try_recv() {
+                    match command {
+                        CapriceCommand::Println(msg) => {
+                            self.executor.print_msg(msg)?;
+                        }
+                        CapriceCommand::Exit => {
+                            self.executor.exec_exit()?;
+                            return Ok(());
                         }
                     }
                 }
             }
         });
 
-        Ok((tx_stop, rx_token, handle))
+        Ok((tx_command, rx_keyword, handle))
     }
 
     fn eval(&mut self) -> Result<Option<String>> {
         self.executor.poll()
-    }
-
-    // Creates and binds the channels used for communication between caprice and the parent application
-    fn channels(&mut self) -> (mpsc::Sender<CapriceCommand>, mpsc::Receiver<String>) {
-        let (tx_token, rx_token) = mpsc::channel();
-        let (tx_stop, rx_stop) = mpsc::channel();
-
-        self.tx_out = Some(tx_token);
-        self.rx_in = Some(rx_stop);
-
-        (tx_stop, rx_token)
     }
 }
 
