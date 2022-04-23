@@ -113,6 +113,7 @@ impl Caprice {
     /// Runs the REPL in a separate thread returning the transmit and receive channels for message
     /// passing as well as the thread handle for its manipulation by the parent application
     pub fn run(mut self) -> Result<CapriceMessage> {
+        // Build the keyword and command channels.
         let (tx_keyword, rx_keyword) = mpsc::channel();
         let (tx_command, rx_command) = mpsc::channel();
 
@@ -128,7 +129,8 @@ impl Caprice {
                     continue;
                 }
 
-                // Blocks for command
+                // Blocks for command.
+                // TODO: Push recv error to calling application.
                 if let Ok(command) = rx_command.recv() {
                     match command {
                         CapriceCommand::Println(msg) => {
@@ -137,10 +139,9 @@ impl Caprice {
                         CapriceCommand::Exit => {
                             self.executor.exec_exit()?;
                             return Ok(());
-                        },
+                        }
                         CapriceCommand::Continue => continue,
                     }
-
                 }
             }
         });
