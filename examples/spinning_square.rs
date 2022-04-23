@@ -117,6 +117,9 @@ fn main() {
                     }
                     _ => {}
                 }
+                // It's necessary to send a continue command, otherwise the
+                // Caprice thread will block.
+                tx.send(CapriceCommand::Continue).unwrap();
             };
             app.update(&u);
         }

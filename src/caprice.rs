@@ -20,6 +20,10 @@ pub enum CapriceCommand {
     Println(String),
     /// Exit the caprice terminal
     Exit,
+    /// Continue with the next keyword. This command is necessary to be given
+    /// if we received a keyword from `Caprice` but do not wont to send some other
+    /// coomand. See also the `spinning_square` example.
+    Continue,
 }
 
 /// Builds and initializes the caprice terminal
@@ -128,6 +132,7 @@ impl Caprice {
                             self.executor.exec_exit()?;
                             return Ok(());
                         }
+                        CapriceCommand::Continue => continue,
                     }
                 }
             }

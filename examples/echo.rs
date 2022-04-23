@@ -16,6 +16,10 @@ fn main() {
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
     // to caprice
+    //
+    // If you receive a token you __must__ send a command back to caprice otherwise
+    // the caprice thread will block. If you don't want to do something with the token
+    // you can send the `Continue` command.
     let (tx, rx, caprice_handle) = caprice.run().unwrap();
     // our main application runs here
     // for this example we will simply print back
