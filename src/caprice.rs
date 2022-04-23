@@ -4,37 +4,37 @@ use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
 
-/// Return type of Caprice::run
-/// Sender can be used to send commands to the caprice REPL
-/// Receiver can be used to receive the keywords typed by the user
-/// Handle can be used to join caprices' thread
+/// Return type of `Caprice::run`.
+/// Sender can be used to send commands to the `Caprice` REPL.
+/// Receiver can be used to receive the keywords typed by the user.
+/// Handle can be used to join caprices' thread.
 pub type CapriceMessage = (
     mpsc::Sender<CapriceCommand>,
     mpsc::Receiver<String>,
     JoinHandle<Result<()>>,
 );
 
-/// Commands that can be sent to the Caprice REPL by the invoking application
+/// Commands that can be sent to the `Caprice` REPL by the invoking application.
 pub enum CapriceCommand {
-    /// Print the provided string
+    /// Print the provided string.
     Println(String),
-    /// Exit the caprice terminal
+    /// Exit the `Caprice` terminal.
     Exit,
-    /// Continue with the next keyword. This command is necessary to be given
-    /// if we received a keyword from `Caprice` but do not wont to send some other
-    /// coomand. See also the `spinning_square` example.
+    /// Continue with the next keyword. This command must be sent to `Caprice`
+    /// if we received a keyword but do not want to send some other
+    /// command. See also the `spinning_square` example.
     Continue,
 }
 
-/// Builds and initializes the caprice terminal
+/// Builds and initializes the `Caprice` terminal
 pub struct CapriceBuilder {
     caprice: Caprice,
 }
 
 impl CapriceBuilder {
-    /// Initializes the caprice REPL.
+    /// Initializes the `Caprice` REPL.
     /// This function should be the last one called in the
-    /// caprice object's construction chain
+    /// `Caprice` object's construction chain
     ///
     /// # Example
     /// ```rust, no_run
@@ -59,7 +59,6 @@ impl CapriceBuilder {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    /// This method will only include keywords that start with an alphabetic character
     pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
         self.caprice.executor.set_keywords(keywords);
         self
@@ -81,7 +80,7 @@ impl CapriceBuilder {
         self
     }
 
-    /// Sets the prompt displayed while the caprice parser is running
+    /// Sets the prompt displayed while the `Caprice` parser is running
     ///
     /// ## Note
     /// This method __will not__ check for the length of the provided prompt,
@@ -94,7 +93,7 @@ impl CapriceBuilder {
     }
 }
 
-/// The main object of the Caprice REPL
+/// The main object of the `Caprice` REPL
 #[derive(Debug)]
 pub struct Caprice {
     executor: Executor,
@@ -102,7 +101,7 @@ pub struct Caprice {
 
 impl Caprice {
     #![allow(clippy::new_ret_no_self)]
-    /// Creates a new Caprice object.
+    /// Creates a new `Caprice` builder object.
     pub fn new() -> CapriceBuilder {
         CapriceBuilder {
             caprice: Caprice {
