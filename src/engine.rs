@@ -27,19 +27,16 @@ impl Executor {
         }
     }
 
-    pub(crate) fn poll(&mut self) -> Result<Option<String>> {
+    // Block until the next key event.
+    pub(crate) fn get_next_key_event(&mut self) -> Result<Option<String>> {
         self.terminal.flush()?;
-        if let Some(input_event) = self.terminal.next_key_event()? {
-            match self.scanner.scan(input_event) {
-                TokenType::Token(token) => self.exec_token(token),
-                TokenType::BackSpace => self.exec_backspace(),
-                TokenType::Tab(buffer) => self.exec_tab(buffer),
-                TokenType::Continue(buffer) => self.exec_valid_char(buffer),
-                TokenType::Exit => self.exec_exit(),
-                TokenType::None => Ok(None),
-            }
-        } else {
-            Ok(None)
+        match self.scanner.scan(self.terminal.next_key_event()?) {
+            TokenType::Token(token) => self.exec_token(token),
+            TokenType::BackSpace => self.exec_backspace(),
+            TokenType::Tab(buffer) => self.exec_tab(buffer),
+            TokenType::Continue(buffer) => self.exec_valid_char(buffer),
+            TokenType::Exit => self.exec_exit(),
+            TokenType::None => Ok(None),
         }
     }
 
