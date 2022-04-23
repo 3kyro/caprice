@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0]
 
+This is a patch release that addresses concurrency and latency issues.
+
 ### Changed
 
+- Add `Continue` variant for `CapriceCommand`. At least one command must be
+  sent to `Caprice` when a keyword is received, otherwise the `Caprice` thread
+  will block.
 - Removed `CapriceError::IO`.
 - Validate keywords. Caprice keywords are now validated against the "^[_a-zA-Z][A-Za-z_0-9]*$" regex.
 - `Caprice::set_keywords()` will now receive a `Vec` of keywords by value.
