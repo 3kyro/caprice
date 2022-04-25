@@ -148,6 +148,34 @@ impl Caprice {
 
         Ok((tx_command, rx_keyword, handle))
     }
+
+    /// Returns the next keyword from the `Caprice` REPL. This method
+    /// __will block__ and should be used for synchronous programs. See also
+    /// the `echo_synchronous` example.
+    pub fn get(&mut self) -> Result<String> {
+        loop {
+            // The caprice thread blocks on the terminal executor.
+            if let Some(keyword) = self.executor.get_next_key_event()? {
+                return Ok(keyword);
+            } else {
+                // If no token is received wait for the next terminal event.
+                continue;
+            }
+        }
+    }
+
+    /// Pass a `CapriceCommand` to the `Caprice` REPL. This method is intented to
+    /// be used on synchronous programs. See also the `echo_synchronous` example.
+    pub fn send(&mut self, command: CapriceCommand) -> Result<()> {
+        match command {
+            CapriceCommand::Println(msg) => self.executor.print_msg(msg),
+            CapriceCommand::Exit => {
+                self.executor.exec_exit()?;
+                Ok(())
+            }
+            CapriceCommand::Continue => Ok(()),
+        }
+    }
 }
 
 /// Ensures the process exits gracefully, returning the terminal to its

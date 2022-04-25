@@ -1,7 +1,9 @@
 //! Caprice is a simple [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for Rust projects featuring an easy to use, zsh like
 //! autocomplete feature.
 //!
-//! # Example:
+//! For a synchronous execution example, see `echo_synchronous` in the examples folder
+//!
+//! # Example running `Caprice` on a separate thread:
 //! ```rust, no_run
 //! use caprice::{Caprice, CapriceCommand};
 //! use std::thread;
