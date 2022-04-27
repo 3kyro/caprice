@@ -1,8 +1,14 @@
+use std::io::stdout;
+
 use crate::autocomplete::Autocomplete;
 use crate::error::Result;
+use crate::options::Options;
 use crate::scanner::{Scanner, TokenType};
 use crate::terminal::Terminal;
-use crossterm::style::{Attribute, Color, SetBackgroundColor, SetForegroundColor};
+use crossterm::execute;
+use crossterm::style::{
+    Attribute, Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor,
+};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -13,6 +19,7 @@ pub(crate) struct Executor {
     keywords: Vec<String>,
     commands: Vec<String>,
     pub(crate) prompt: &'static str,
+    pub(crate) options: Options,
 }
 
 impl Executor {
@@ -24,7 +31,18 @@ impl Executor {
             keywords: Vec::new(),
             commands: vec!["/list".to_owned()],
             prompt: "!:",
+            options: Options::default(),
         }
+    }
+
+    fn print_prompt(&self) -> Result<()> {
+        Ok(execute!(
+            stdout(),
+            SetForegroundColor(self.options.prompt_color),
+            Print(self.prompt),
+            Print(" "),
+            ResetColor,
+        )?)
     }
 
     // Block until the next key event.
@@ -47,7 +65,7 @@ impl Executor {
     }
 
     pub(crate) fn reset_prompt(&mut self) -> Result<()> {
-        print!("{} ", self.prompt);
+        self.print_prompt()?;
         self.clear_prompt()
     }
 
@@ -206,7 +224,8 @@ impl Executor {
 
         if let Some(keyword) = self.autocomplete.get_keywords().get(idx) {
             let keyword = keyword.trim_end();
-            print!("{} {}", self.prompt, keyword);
+            self.print_prompt()?;
+            print!("{}", keyword);
         };
         Ok(())
     }

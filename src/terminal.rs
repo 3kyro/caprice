@@ -12,7 +12,7 @@ use std::io::{stdout, Stdout, Write};
 
 #[derive(Debug)]
 pub(super) struct Terminal {
-    stdout: Stdout,
+    pub(crate) stdout: Stdout,
     alternate_screen: AlternateScreen,
 }
 

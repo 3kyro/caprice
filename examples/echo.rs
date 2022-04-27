@@ -1,10 +1,17 @@
+use caprice::options::Options;
 use caprice::{Caprice, CapriceCommand};
+use crossterm::style::Color;
 use std::thread;
 use std::time::Duration;
+
 fn main() {
     let caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+        .set_options(Options {
+            // Set Caprice options
+            prompt_color: Color::Yellow,
+        })
         .set_keywords(vec![
             // set some tokens
             "some_token".to_owned(),

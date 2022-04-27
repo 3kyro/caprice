@@ -1,5 +1,6 @@
 use crate::engine::Executor;
 use crate::error::Result;
+use crate::options::Options;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
@@ -51,6 +52,10 @@ impl CapriceBuilder {
         } else {
             panic!("Caprice: Error initializing prompt");
         }
+    }
+    pub fn set_options(mut self, options: Options) -> Self {
+        self.caprice.executor.options = options;
+        self
     }
 
     /// Sets the current active keywords for the parser

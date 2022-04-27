@@ -58,6 +58,7 @@ mod autocomplete;
 pub mod caprice;
 mod engine;
 pub mod error;
+pub mod options;
 mod scanner;
 mod terminal;
 pub use self::caprice::Caprice;
