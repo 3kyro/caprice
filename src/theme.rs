@@ -1,16 +1,16 @@
 use crossterm::style::Color;
 
 #[derive(Debug)]
-/// Options for the `Caprice` REPL.
-pub struct Options {
+/// Theme for the `Caprice` REPL.
+pub struct Theme {
     /// Sets the prompt to the desired color.
     pub prompt_color: Color,
 }
 
-impl Options {
+impl Theme {
     /// Default options.
     pub fn default() -> Self {
-        Options {
+        Theme {
             prompt_color: Color::White,
         }
     }

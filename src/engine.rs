@@ -2,9 +2,9 @@ use std::io::stdout;
 
 use crate::autocomplete::Autocomplete;
 use crate::error::Result;
-use crate::options::Options;
 use crate::scanner::{Scanner, TokenType};
 use crate::terminal::Terminal;
+use crate::theme::Theme;
 use crossterm::execute;
 use crossterm::style::{
     Attribute, Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor,
@@ -19,7 +19,7 @@ pub(crate) struct Executor {
     keywords: Vec<String>,
     commands: Vec<String>,
     pub(crate) prompt: &'static str,
-    pub(crate) options: Options,
+    pub(crate) theme: Theme,
 }
 
 impl Executor {
@@ -31,14 +31,14 @@ impl Executor {
             keywords: Vec::new(),
             commands: vec!["/list".to_owned()],
             prompt: "!:",
-            options: Options::default(),
+            theme: Theme::default(),
         }
     }
 
     fn print_prompt(&self) -> Result<()> {
         Ok(execute!(
             stdout(),
-            SetForegroundColor(self.options.prompt_color),
+            SetForegroundColor(self.theme.prompt_color),
             Print(self.prompt),
             Print(" "),
             ResetColor,

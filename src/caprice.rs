@@ -1,6 +1,6 @@
 use crate::engine::Executor;
 use crate::error::Result;
-use crate::options::Options;
+use crate::theme::Theme;
 use crossterm::style::Attribute;
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
@@ -53,8 +53,8 @@ impl CapriceBuilder {
             panic!("Caprice: Error initializing prompt");
         }
     }
-    pub fn set_options(mut self, options: Options) -> Self {
-        self.caprice.executor.options = options;
+    pub fn theme(mut self, theme: Theme) -> Self {
+        self.caprice.executor.theme = theme;
         self
     }
 
