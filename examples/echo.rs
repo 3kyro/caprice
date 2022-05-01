@@ -1,4 +1,4 @@
-use caprice::options::Options;
+use caprice::theme::{Theme, DEFAULT_THEME};
 use caprice::{Caprice, CapriceCommand};
 use crossterm::style::Color;
 use std::thread;
@@ -8,9 +8,10 @@ fn main() {
     let caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
-        .set_options(Options {
+        .theme(Theme {
             // Set Caprice options
             prompt_color: Color::Yellow,
+            ..DEFAULT_THEME
         })
         .set_keywords(vec![
             // set some tokens

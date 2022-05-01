@@ -2,13 +2,11 @@ use std::io::stdout;
 
 use crate::autocomplete::Autocomplete;
 use crate::error::Result;
-use crate::options::Options;
 use crate::scanner::{Scanner, TokenType};
 use crate::terminal::Terminal;
+use crate::theme::{Theme, DEFAULT_THEME};
 use crossterm::execute;
-use crossterm::style::{
-    Attribute, Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor,
-};
+use crossterm::style::{Attribute, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -19,7 +17,7 @@ pub(crate) struct Executor {
     keywords: Vec<String>,
     commands: Vec<String>,
     pub(crate) prompt: &'static str,
-    pub(crate) options: Options,
+    pub(crate) theme: Theme,
 }
 
 impl Executor {
@@ -31,14 +29,14 @@ impl Executor {
             keywords: Vec::new(),
             commands: vec!["/list".to_owned()],
             prompt: "!:",
-            options: Options::default(),
+            theme: DEFAULT_THEME,
         }
     }
 
     fn print_prompt(&self) -> Result<()> {
         Ok(execute!(
             stdout(),
-            SetForegroundColor(self.options.prompt_color),
+            SetForegroundColor(self.theme.prompt_color),
             Print(self.prompt),
             Print(" "),
             ResetColor,
@@ -205,8 +203,8 @@ impl Executor {
             if i == idx {
                 print!(
                     "{}{}{}  {}",
-                    SetBackgroundColor(Color::Grey),
-                    SetForegroundColor(Color::Black),
+                    SetBackgroundColor(self.theme.suggestion_bg),
+                    SetForegroundColor(self.theme.suggestion_fg),
                     word,
                     Attribute::Reset
                 );
@@ -248,8 +246,11 @@ impl Executor {
 
         self.autocomplete.update(&buffer, &self.keywords);
 
-        self.autocomplete
-            .print_same_line_autocompleted(&buffer, &self.terminal)?;
+        self.autocomplete.print_same_line_autocompleted(
+            self.theme.autocomplete_color,
+            &buffer,
+            &self.terminal,
+        )?;
 
         self.autocomplete.reset_tabbed();
         Ok(None)

@@ -96,6 +96,7 @@ impl<'a> Autocomplete {
     // displays an autocomplete suggestion
     pub(crate) fn print_same_line_autocompleted(
         &self,
+        color: Color,
         buffer: &str,
         terminal: &Terminal,
     ) -> Result<()> {
@@ -105,7 +106,7 @@ impl<'a> Autocomplete {
             // print in DarkGreen the autocompleted part
             print!(
                 "{}{}{}",
-                SetForegroundColor(Color::DarkGreen),
+                SetForegroundColor(color),
                 self.common.split_at(buffer.len()).1,
                 Attribute::Reset
             );
