@@ -106,7 +106,7 @@ checksum = "a7c3dd8985a7111efc5c80b44e23ecdd8c007de8ade3b96595387e812b957cf5"
 
 [[package]]
 name = "caprice"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "crossterm",
  "exitcode",

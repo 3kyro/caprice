@@ -16,6 +16,7 @@ pub type CapriceMessage = (
 );
 
 /// Commands that can be sent to the `Caprice` REPL by the invoking application.
+#[derive(Debug)]
 pub enum CapriceCommand {
     /// Print the provided string.
     Println(String),
@@ -28,6 +29,7 @@ pub enum CapriceCommand {
 }
 
 /// Builds and initializes the `Caprice` terminal
+#[derive(Debug)]
 pub struct CapriceBuilder {
     caprice: Caprice,
 }
