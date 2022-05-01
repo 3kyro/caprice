@@ -4,11 +4,9 @@ use crate::autocomplete::Autocomplete;
 use crate::error::Result;
 use crate::scanner::{Scanner, TokenType};
 use crate::terminal::Terminal;
-use crate::theme::Theme;
+use crate::theme::{Theme, DEFAULT_THEME};
 use crossterm::execute;
-use crossterm::style::{
-    Attribute, Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor,
-};
+use crossterm::style::{Attribute, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
 use regex::Regex;
 
 #[derive(Debug)]
@@ -31,7 +29,7 @@ impl Executor {
             keywords: Vec::new(),
             commands: vec!["/list".to_owned()],
             prompt: "!:",
-            theme: Theme::default(),
+            theme: DEFAULT_THEME,
         }
     }
 
@@ -205,8 +203,8 @@ impl Executor {
             if i == idx {
                 print!(
                     "{}{}{}  {}",
-                    SetBackgroundColor(Color::Grey),
-                    SetForegroundColor(Color::Black),
+                    SetBackgroundColor(self.theme.suggestion_bg),
+                    SetForegroundColor(self.theme.suggestion_fg),
                     word,
                     Attribute::Reset
                 );
@@ -248,8 +246,11 @@ impl Executor {
 
         self.autocomplete.update(&buffer, &self.keywords);
 
-        self.autocomplete
-            .print_same_line_autocompleted(&buffer, &self.terminal)?;
+        self.autocomplete.print_same_line_autocompleted(
+            self.theme.autocomplete_color,
+            &buffer,
+            &self.terminal,
+        )?;
 
         self.autocomplete.reset_tabbed();
         Ok(None)

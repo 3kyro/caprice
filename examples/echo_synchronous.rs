@@ -1,8 +1,9 @@
-use caprice::{Caprice, CapriceCommand};
+use caprice::{theme::DARK_BLUE, Caprice, CapriceCommand};
 fn main() {
     let mut caprice = Caprice::new()
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
+        .theme(DARK_BLUE)
         .set_keywords(vec![
             // set some tokens
             "some_token".to_owned(),

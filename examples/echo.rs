@@ -1,4 +1,4 @@
-use caprice::theme::Theme;
+use caprice::theme::{Theme, DEFAULT_THEME};
 use caprice::{Caprice, CapriceCommand};
 use crossterm::style::Color;
 use std::thread;
@@ -11,6 +11,7 @@ fn main() {
         .theme(Theme {
             // Set Caprice options
             prompt_color: Color::Yellow,
+            ..DEFAULT_THEME
         })
         .set_keywords(vec![
             // set some tokens

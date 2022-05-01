@@ -1,4 +1,6 @@
+use caprice::theme::{Theme, DEFAULT_THEME};
 use caprice::{Caprice, CapriceCommand};
+use crossterm::style::Color;
 use std::thread;
 use std::time::Duration;
 fn main() {
@@ -6,6 +8,10 @@ fn main() {
         .set_prompt("!:") // set the prompt
         .disable_ctrl_c() // pressing control + c won't terminate the caprice console
         .enable_alternate_screen()
+        .theme(Theme {
+            prompt_color: Color::Yellow,
+            ..DEFAULT_THEME
+        })
         .set_keywords(vec![
             // set some tokens
             "some_token".to_owned(),
