@@ -70,7 +70,8 @@ fn main() {
             "blue_square".to_owned(),
             "blue_background".to_owned(),
         ])
-        .init();
+        .init()
+        .unwrap();
 
     // get the caprice channels
     let (tx, rx, handle) = caprice.run().unwrap();

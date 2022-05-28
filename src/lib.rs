@@ -18,7 +18,8 @@
 //!         "some_other_token".to_owned(),
 //!         "exit".to_owned(), // an exit keyword
 //!     ])
-//!     .init(); // initializes the caprice terminal
+//!     .init()
+//!     .unwrap(); // initializes the caprice terminal
 //!
 //! // caprice.run() will execute the REPL in a separate thread.
 //! // You can use the returned tx and rx channels for receiving and sending messages

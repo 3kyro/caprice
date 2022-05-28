@@ -10,7 +10,8 @@ fn main() {
             "some_other_token".to_owned(),
             "exit".to_owned(), // an exit keyword
         ])
-        .init(); // initializes the caprice terminal
+        .init()
+        .unwrap(); // initializes the caprice terminal
 
     loop {
         // Block until we get the next keyword from `Caprice`.

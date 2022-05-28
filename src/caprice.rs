@@ -39,13 +39,11 @@ impl CapriceBuilder {
     /// **Once initialized, `Caprice` will take over the user's terminal, including keyboard input.
     /// See the `echo` and `echo_synchronous` examples on how to work with an initialized `Caprice`
     /// REPL.**
-    pub fn init(mut self) -> Caprice {
-        if self.caprice.executor.reset_prompt().is_ok() {
-            self.caprice
-        } else {
-            panic!("Caprice: Error initializing prompt");
-        }
+    pub fn init(mut self) -> Result<Caprice> {
+        self.caprice.executor.reset_prompt()?;
+        Ok(self.caprice)
     }
+
     pub fn theme(mut self, theme: Theme) -> Self {
         self.caprice.executor.theme = theme;
         self

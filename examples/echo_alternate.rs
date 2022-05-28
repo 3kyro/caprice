@@ -18,7 +18,8 @@ fn main() {
             "some_other_token".to_owned(),
             "exit".to_owned(), // an exit keyword
         ])
-        .init(); // initializes the caprice terminal
+        .init()
+        .unwrap(); // initializes the caprice terminal
 
     // caprice.run() will run the caprice in a separate thread.
     // you can use the returned tx and rx channels for receiving and sending messages
