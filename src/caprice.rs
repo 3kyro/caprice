@@ -36,18 +36,9 @@ pub struct CapriceBuilder {
 
 impl CapriceBuilder {
     /// Initializes the `Caprice` REPL.
-    /// This function should be the last one called in the
-    /// `Caprice` object's construction chain
-    ///
-    /// # Example
-    /// ```rust, no_run
-    ///  use caprice::Caprice;
-    ///
-    /// let mut caprice = Caprice::new()
-    ///     .set_prompt("!:") // set the prompt
-    ///     .disable_ctrl_c() // pressing control + c won't terminate the caprice console
-    ///     .init(); // initializes the caprice terminal
-    /// ```
+    /// **Once initialized, `Caprice` will take over the user's terminal, including keyboard input.
+    /// See the `echo` and `echo_synchronous` examples on how to work with an initialized `Caprice`
+    /// REPL.**
     pub fn init(mut self) -> Caprice {
         if self.caprice.executor.reset_prompt().is_ok() {
             self.caprice
