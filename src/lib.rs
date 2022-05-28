@@ -50,8 +50,8 @@
 //!             }
 //!         }
 //!     }
-//!     // let the thread sleep for some time
-//!     thread::sleep(Duration::from_millis(10));
+//!     // Caprice thread polling period.
+//!     thread::sleep(Duration::from_millis(100));
 //! }
 //! ```
 

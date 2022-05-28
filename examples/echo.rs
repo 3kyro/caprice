@@ -46,7 +46,7 @@ fn main() {
                         tx.send(CapriceCommand::Exit).unwrap();
                         caprice_handle
                             .join()
-                            .expect("couldn't join thread")
+                            .expect("Could not join thread")
                             .expect("Caprice run has encountered an error");
                         break; // at this point caprice has already exited, let the main process do as well
                     }
@@ -62,7 +62,7 @@ fn main() {
                 }
             }
         }
-        // let the thread sleep for some time
-        thread::sleep(Duration::from_millis(10));
+        // Caprice thread polling period.
+        thread::sleep(Duration::from_millis(100));
     }
 }

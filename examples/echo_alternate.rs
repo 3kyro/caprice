@@ -30,7 +30,7 @@ fn main() {
     // the tokens send by caprice
     loop {
         // if we received a token from caprice
-        if let Ok(token) = rx.recv() {
+        if let Ok(token) = rx.try_recv() {
             match token.as_str() {
                 // leave if the user types exit
                 "exit" => {
@@ -48,7 +48,7 @@ fn main() {
                 }
             }
         }
-        // let the thread sleep for some time
-        thread::sleep(Duration::from_millis(10));
+        // Caprice thread polling period.
+        thread::sleep(Duration::from_millis(100));
     }
 }
