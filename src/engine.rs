@@ -18,6 +18,7 @@ pub(crate) struct Executor {
     commands: Vec<String>,
     pub(crate) prompt: &'static str,
     pub(crate) theme: Theme,
+    pub(crate) alternate_screen: bool,
 }
 
 impl Executor {
@@ -30,6 +31,7 @@ impl Executor {
             commands: vec!["/list".to_owned()],
             prompt: "!:",
             theme: DEFAULT_THEME,
+            alternate_screen: false,
         }
     }
 

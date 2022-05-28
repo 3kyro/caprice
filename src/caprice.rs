@@ -40,6 +40,12 @@ impl CapriceBuilder {
     /// See the `echo` and `echo_synchronous` examples on how to work with an initialized `Caprice`
     /// REPL.**
     pub fn init(mut self) -> Result<Caprice> {
+        // Caprice needs the terminal's raw mode to be enabled
+        self.caprice.executor.terminal.enable_raw_mode()?;
+        // set alternate mode
+        if self.caprice.executor.alternate_screen {
+            self.caprice.executor.terminal.enable_alternate_screen()?
+        }
         self.caprice.executor.reset_prompt()?;
         Ok(self.caprice)
     }
@@ -62,11 +68,7 @@ impl CapriceBuilder {
 
     /// Enables Alternate Screen rendering
     pub fn enable_alternate_screen(mut self) -> Self {
-        self.caprice
-            .executor
-            .terminal
-            .enable_alternate_screen()
-            .expect("Caprice: Error enabling alternate screen");
+        self.caprice.executor.alternate_screen = true;
         self
     }
 
