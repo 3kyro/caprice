@@ -259,9 +259,10 @@ impl Executor {
     }
 
     pub fn print_msg(&mut self, msg: String) -> Result<()> {
-        print!("{}", msg);
-        self.terminal.goto_next_line()?;
-        Ok(())
+        msg.lines().map(|msg| {
+            print!("{}", msg);
+            self.terminal.goto_next_line()
+        }).collect::<Result<()>>()
     }
 }
 
