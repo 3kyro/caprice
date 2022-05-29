@@ -132,7 +132,7 @@ impl Caprice {
                 if let Ok(command) = rx_command.recv() {
                     match command {
                         CapriceCommand::Println(msg) => {
-                            self.executor.print_msg(msg)?;
+                            self.executor.print_msg(&msg)?;
                             self.executor.reset_prompt()?;
                         }
                         CapriceCommand::Exit => {
@@ -168,7 +168,7 @@ impl Caprice {
     pub fn send(&mut self, command: CapriceCommand) -> Result<()> {
         match command {
             CapriceCommand::Println(msg) => {
-                self.executor.print_msg(msg)?;
+                self.executor.print_msg(&msg)?;
                 self.executor.reset_prompt()
             }
             CapriceCommand::Exit => {
