@@ -133,6 +133,7 @@ impl Caprice {
                     match command {
                         CapriceCommand::Println(msg) => {
                             self.executor.print_msg(msg)?;
+                            self.executor.reset_prompt()?;
                         }
                         CapriceCommand::Exit => {
                             self.executor.exec_exit()?;
@@ -166,7 +167,10 @@ impl Caprice {
     /// be used on synchronous programs. See also the `echo_synchronous` example.
     pub fn send(&mut self, command: CapriceCommand) -> Result<()> {
         match command {
-            CapriceCommand::Println(msg) => self.executor.print_msg(msg),
+            CapriceCommand::Println(msg) => {
+                self.executor.print_msg(msg)?;
+                self.executor.reset_prompt()
+            }
             CapriceCommand::Exit => {
                 self.executor.exec_exit()?;
                 Ok(())
