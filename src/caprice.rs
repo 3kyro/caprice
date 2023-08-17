@@ -61,7 +61,7 @@ impl CapriceBuilder {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
+    pub fn set_keywords(mut self, keywords: Vec<&'static str>) -> Self {
         self.caprice.executor.set_keywords(keywords);
         self
     }

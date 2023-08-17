@@ -62,13 +62,13 @@ fn main() {
         .disable_ctrl_c()
         // set keywords
         .set_keywords(vec![
-            "exit".to_owned(),
-            "red_square".to_owned(),
-            "green_square".to_owned(),
-            "red_background".to_owned(),
-            "green_background".to_owned(),
-            "blue_square".to_owned(),
-            "blue_background".to_owned(),
+            "exit",
+            "red_square",
+            "green_square",
+            "red_background",
+            "green_background",
+            "blue_square",
+            "blue_background",
         ])
         .init()
         .unwrap();

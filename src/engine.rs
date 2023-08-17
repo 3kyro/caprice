@@ -58,10 +58,11 @@ impl Executor {
         }
     }
 
-    pub(crate) fn set_keywords(&mut self, keywords: Vec<String>) {
+    pub(crate) fn set_keywords(&mut self, keywords: Vec<&'static str>) {
         let mut valid_keywords = get_valid_keywords(keywords);
         valid_keywords.sort();
-        self.keywords = valid_keywords
+        // TODO-NOW: self.keywords can be &str?
+        self.keywords = valid_keywords.into_iter().map(|k| k.to_owned()).collect()
     }
 
     pub(crate) fn reset_prompt(&mut self) -> Result<()> {
@@ -259,14 +260,16 @@ impl Executor {
     }
 
     pub fn print_msg(&mut self, msg: &str) -> Result<()> {
-        msg.lines().map(|msg| {
-            print!("{}", msg);
-            self.terminal.goto_next_line()
-        }).collect::<Result<()>>()
+        msg.lines()
+            .map(|msg| {
+                print!("{}", msg);
+                self.terminal.goto_next_line()
+            })
+            .collect::<Result<()>>()
     }
 }
 
-fn get_valid_keywords(keywords: Vec<String>) -> Vec<String> {
+fn get_valid_keywords(keywords: Vec<&'static str>) -> Vec<&'static str> {
     let re = &Regex::new(r"^[_a-zA-Z][A-Za-z_0-9]*$").unwrap();
     keywords
         .into_iter()
@@ -280,28 +283,20 @@ mod tests {
 
     #[test]
     fn filter_keywords() {
-        let empty_keywords: Vec<String> = Vec::new();
+        let empty_keywords: Vec<&'static str> = Vec::new();
         let filtered = get_valid_keywords(empty_keywords);
         assert!(filtered.is_empty());
 
-        let empty_string_keywords: Vec<String> = vec!["".to_owned()];
+        let empty_string_keywords: Vec<&'static str> = vec![""];
         let filtered = get_valid_keywords(empty_string_keywords);
         assert!(filtered.is_empty());
 
-        let valid_keywords: Vec<String> =
-            vec!["one".to_owned(), "_two".to_owned(), "thr3ee".to_owned()];
+        let valid_keywords: Vec<&'static str> = vec!["one", "_two", "thr3ee"];
         let filtered = get_valid_keywords(valid_keywords.clone());
         assert_eq!(valid_keywords, filtered);
 
-        let mixed_keywords: Vec<String> = vec![
-            "9four".to_owned(),
-            "".to_owned(),
-            "invalid#symbol".to_owned(),
-            "one".to_owned(),
-            "2".to_owned(),
-            "_two".to_owned(),
-            "thr3ee".to_owned(),
-        ];
+        let mixed_keywords: Vec<&'static str> =
+            vec!["9four", "", "invalid#symbol", "one", "2", "_two", "thr3ee"];
         let filtered = get_valid_keywords(mixed_keywords);
         assert_eq!(valid_keywords, filtered);
     }

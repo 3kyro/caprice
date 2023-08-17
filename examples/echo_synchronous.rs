@@ -6,9 +6,9 @@ fn main() {
         .theme(DARK_BLUE)
         .set_keywords(vec![
             // set some tokens
-            "some_token".to_owned(),
-            "some_other_token".to_owned(),
-            "exit".to_owned(), // an exit keyword
+            "some_token",
+            "some_other_token",
+            "exit", // an exit keyword
         ])
         .init()
         .unwrap(); // initializes the caprice terminal
