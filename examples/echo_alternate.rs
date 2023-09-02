@@ -34,7 +34,7 @@ fn main() {
             match token.as_str() {
                 // leave if the user types exit
                 "exit" => {
-                    tx.send(CapriceCommand::Exit).unwrap();
+                    tx.send(Some(CapriceCommand::Exit)).unwrap();
                     caprice_handle
                         .join()
                         .expect("couldn't join thread")
@@ -44,7 +44,7 @@ fn main() {
                 // else send back the token to be printed
                 _ => {
                     let print_token = format!("Got {} from Caprice", token);
-                    tx.send(CapriceCommand::Println(print_token)).unwrap();
+                    tx.send(Some(CapriceCommand::Println(print_token))).unwrap();
                 }
             }
         }

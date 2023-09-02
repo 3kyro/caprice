@@ -37,16 +37,16 @@
 //!             // leave if the user types exit
 //!             "exit" => {
 //!                 // print a message to the screen before exiting
-//!                 tx.send(CapriceCommand::Println("bye".to_owned())).unwrap();
+//!                 tx.send(Some(CapriceCommand::Println("bye".to_owned()))).unwrap();
 //!                 // send an exit command
-//!                 tx.send(CapriceCommand::Exit).unwrap();
+//!                 tx.send(Some(CapriceCommand::Exit)).unwrap();
 //!                 handle.join().expect("couldn't join thread").expect("Caprice run has encountered an error");
 //!                 break; // at this point caprice has already exited, let the main process do as well
 //!             },
 //!             // else send back the token to be printed
 //!             _ => {
 //!                 let print_token = format!("Got {} from Caprice.", token);
-//!                 tx.send(CapriceCommand::Println(print_token)).unwrap();
+//!                 tx.send(Some(CapriceCommand::Println(print_token))).unwrap();
 //!             }
 //!         }
 //!     }

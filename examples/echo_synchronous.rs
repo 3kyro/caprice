@@ -23,7 +23,7 @@ fn main() {
             match keyword {
                 "exit" => {
                     // Clean up the terminal
-                    caprice.send(CapriceCommand::Exit).unwrap();
+                    caprice.send(Some(CapriceCommand::Exit)).unwrap();
                     break;
                 }
                 _ => {
@@ -34,7 +34,9 @@ fn main() {
                         keyword,
                         args.collect::<Vec<&str>>().join(", ")
                     );
-                    caprice.send(CapriceCommand::Println(print_token)).unwrap();
+                    caprice
+                        .send(Some(CapriceCommand::Println(print_token)))
+                        .unwrap();
                 }
             }
         }
