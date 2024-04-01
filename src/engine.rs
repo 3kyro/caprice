@@ -172,7 +172,7 @@ impl Executor {
         self.autocomplete.incr_idx();
 
         // get num of words that fit in one line
-        if let Some(first) = self.autocomplete.get_keywords().get(0) {
+        if let Some(first) = self.autocomplete.get_keywords().first() {
             num_per_line = self.terminal.size().0 / (first.len() as u16 + word_separation);
             if num_per_line > word_margin {
                 num_per_line -= word_margin;
@@ -260,12 +260,10 @@ impl Executor {
     }
 
     pub fn print_msg(&mut self, msg: &str) -> Result<()> {
-        msg.lines()
-            .map(|msg| {
-                print!("{}", msg);
-                self.terminal.goto_next_line()
-            })
-            .collect::<Result<()>>()
+        msg.lines().try_for_each(|msg| {
+            print!("{}", msg);
+            self.terminal.goto_next_line()
+        })
     }
 }
 
