@@ -6,9 +6,9 @@ fn main() {
         .theme(DARK_BLUE)
         .set_keywords(vec![
             // set some tokens
-            "some_token".to_owned(),
-            "some_other_token".to_owned(),
-            "exit".to_owned(), // an exit keyword
+            "some_token",
+            "some_other_token",
+            "exit", // an exit keyword
         ])
         .init()
         .unwrap(); // initializes the caprice terminal
@@ -23,7 +23,7 @@ fn main() {
             match keyword {
                 "exit" => {
                     // Clean up the terminal
-                    caprice.send(CapriceCommand::Exit).unwrap();
+                    caprice.send(Some(CapriceCommand::Exit)).unwrap();
                     break;
                 }
                 _ => {
@@ -34,7 +34,9 @@ fn main() {
                         keyword,
                         args.collect::<Vec<&str>>().join(", ")
                     );
-                    caprice.send(CapriceCommand::Println(print_token)).unwrap();
+                    caprice
+                        .send(Some(CapriceCommand::Println(print_token)))
+                        .unwrap();
                 }
             }
         }

@@ -14,9 +14,9 @@ fn main() {
         })
         .set_keywords(vec![
             // set some tokens
-            "some_token".to_owned(),
-            "some_other_token".to_owned(),
-            "exit".to_owned(), // an exit keyword
+            "some_token",
+            "some_other_token",
+            "exit", // an exit keyword
         ])
         .init()
         .unwrap(); // initializes the caprice terminal
@@ -34,7 +34,7 @@ fn main() {
             match token.as_str() {
                 // leave if the user types exit
                 "exit" => {
-                    tx.send(CapriceCommand::Exit).unwrap();
+                    tx.send(Some(CapriceCommand::Exit)).unwrap();
                     caprice_handle
                         .join()
                         .expect("couldn't join thread")
@@ -44,7 +44,7 @@ fn main() {
                 // else send back the token to be printed
                 _ => {
                     let print_token = format!("Got {} from Caprice", token);
-                    tx.send(CapriceCommand::Println(print_token)).unwrap();
+                    tx.send(Some(CapriceCommand::Println(print_token))).unwrap();
                 }
             }
         }

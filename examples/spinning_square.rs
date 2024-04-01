@@ -62,13 +62,13 @@ fn main() {
         .disable_ctrl_c()
         // set keywords
         .set_keywords(vec![
-            "exit".to_owned(),
-            "red_square".to_owned(),
-            "green_square".to_owned(),
-            "red_background".to_owned(),
-            "green_background".to_owned(),
-            "blue_square".to_owned(),
-            "blue_background".to_owned(),
+            "exit",
+            "red_square",
+            "green_square",
+            "red_background",
+            "green_background",
+            "blue_square",
+            "blue_background",
         ])
         .init()
         .unwrap();
@@ -109,7 +109,7 @@ fn main() {
                     "green_square" => app.fg_color = [0.0, 1.0, 0.0, 1.0],
                     "blue_square" => app.fg_color = [0.0, 0.0, 1.0, 1.0],
                     "exit" => {
-                        tx.send(CapriceCommand::Exit).unwrap();
+                        tx.send(Some(CapriceCommand::Exit)).unwrap();
                         // wait for caprice to exit, otherwise the terminal
                         // might be left in raw mode on exit
                         handle.join().unwrap().unwrap();
@@ -118,9 +118,9 @@ fn main() {
                     }
                     _ => {}
                 }
-                // It's necessary to send a continue command, otherwise the
+                // It's necessary to send a `None` as a command, otherwise the
                 // Caprice thread will block.
-                tx.send(CapriceCommand::Continue).unwrap();
+                tx.send(None).unwrap();
             };
             app.update(&u);
         }

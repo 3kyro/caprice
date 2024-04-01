@@ -10,7 +10,7 @@ use std::thread::{self, JoinHandle};
 /// Receiver can be used to receive the keywords typed by the user.
 /// Handle can be used to join caprices' thread.
 pub type CapriceMessage = (
-    mpsc::Sender<CapriceCommand>,
+    mpsc::Sender<Option<CapriceCommand>>,
     mpsc::Receiver<String>,
     JoinHandle<Result<()>>,
 );
@@ -22,10 +22,6 @@ pub enum CapriceCommand {
     Println(String),
     /// Exit the `Caprice` terminal.
     Exit,
-    /// Continue with the next keyword. This command must be sent to `Caprice`
-    /// if we received a keyword but do not want to send some other
-    /// command. See also the `spinning_square` example.
-    Continue,
 }
 
 /// Builds and initializes the `Caprice` terminal
@@ -61,7 +57,7 @@ impl CapriceBuilder {
     /// This method __will not__ check for the length of the provided keywords,
     /// nor if these keywords can be correctly displayed in all supported
     /// terminals.
-    pub fn set_keywords(mut self, keywords: Vec<String>) -> Self {
+    pub fn set_keywords(mut self, keywords: Vec<&'static str>) -> Self {
         self.caprice.executor.set_keywords(keywords);
         self
     }
@@ -131,15 +127,15 @@ impl Caprice {
                 // TODO: Push recv error to calling application.
                 if let Ok(command) = rx_command.recv() {
                     match command {
-                        CapriceCommand::Println(msg) => {
+                        Some(CapriceCommand::Println(msg)) => {
                             self.executor.print_msg(&msg)?;
                             self.executor.reset_prompt()?;
                         }
-                        CapriceCommand::Exit => {
+                        Some(CapriceCommand::Exit) => {
                             self.executor.exec_exit()?;
                             return Ok(());
                         }
-                        CapriceCommand::Continue => continue,
+                        None => continue,
                     }
                 }
             }
@@ -163,19 +159,19 @@ impl Caprice {
         }
     }
 
-    /// Pass a `CapriceCommand` to the `Caprice` REPL. This method is intented to
+    /// Pass a `CapriceCommand` to the `Caprice` REPL. This method is indented to
     /// be used on synchronous programs. See also the `echo_synchronous` example.
-    pub fn send(&mut self, command: CapriceCommand) -> Result<()> {
+    pub fn send(&mut self, command: Option<CapriceCommand>) -> Result<()> {
         match command {
-            CapriceCommand::Println(msg) => {
+            Some(CapriceCommand::Println(msg)) => {
                 self.executor.print_msg(&msg)?;
                 self.executor.reset_prompt()
             }
-            CapriceCommand::Exit => {
+            Some(CapriceCommand::Exit) => {
                 self.executor.exec_exit()?;
                 Ok(())
             }
-            CapriceCommand::Continue => Ok(()),
+            None => Ok(()),
         }
     }
 }
