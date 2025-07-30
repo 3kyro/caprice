@@ -19,6 +19,6 @@ regex = "1.10.2"
 
 [dev-dependencies]
 piston = "0.53.0"
-piston2d-graphics = "0.42.0"
+piston2d-graphics = "0.41.0"
 pistoncore-glutin_window = "0.68.0"
 piston2d-opengl_graphics = "0.79.0"
