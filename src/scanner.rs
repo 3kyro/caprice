@@ -35,6 +35,7 @@ impl Scanner {
             Event::Key(KeyEvent {
                 code: KeyCode::Char('c'),
                 modifiers: KeyModifiers::CONTROL,
+                ..
             }) => self.scan_ctrl_c(),
             Event::Key(KeyEvent {
                 code: KeyCode::Char(c),

@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::io;
 use std::sync::mpsc;
 
 pub type Result<T> = std::result::Result<T, CapriceError>;
@@ -6,14 +7,14 @@ pub type Result<T> = std::result::Result<T, CapriceError>;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum CapriceError {
-    CrosstermError(crossterm::ErrorKind),
+    IoError(io::Error),
     SendErr(mpsc::SendError<String>),
 }
 
 impl std::error::Error for CapriceError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            CapriceError::CrosstermError(e) => Some(e),
+            CapriceError::IoError(e) => Some(e),
             _ => None,
         }
     }
@@ -22,7 +23,7 @@ impl std::error::Error for CapriceError {
 impl Display for CapriceError {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CapriceError::CrosstermError(e) => write!(fmt, "Terminal error occurred: {}", e),
+            CapriceError::IoError(e) => write!(fmt, "IO error occurred: {}", e),
             CapriceError::SendErr(e) => write!(fmt, "Send error occurred: {}", e),
         }
     }
@@ -39,5 +40,5 @@ macro_rules! impl_from {
     };
 }
 
-impl_from!(crossterm::ErrorKind, CapriceError::CrosstermError);
+impl_from!(io::Error, CapriceError::IoError);
 impl_from!(mpsc::SendError<String>, CapriceError::SendErr);
