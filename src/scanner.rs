@@ -1,4 +1,4 @@
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
 pub(crate) enum TokenType {
     Token(String),
@@ -26,22 +26,29 @@ impl Scanner {
     pub(crate) fn scan(&mut self, input_event: Event) -> TokenType {
         match input_event {
             Event::Key(KeyEvent {
-                code: KeyCode::Tab, ..
+                code: KeyCode::Tab,
+                kind: KeyEventKind::Press,
+                ..
             }) => self.scan_tab(),
             Event::Key(KeyEvent {
                 code: KeyCode::Enter,
+                kind: KeyEventKind::Press,
                 ..
             }) => self.scan_enter(),
             Event::Key(KeyEvent {
                 code: KeyCode::Char('c'),
                 modifiers: KeyModifiers::CONTROL,
+                kind: KeyEventKind::Press,
+                ..
             }) => self.scan_ctrl_c(),
             Event::Key(KeyEvent {
                 code: KeyCode::Char(c),
+                kind: KeyEventKind::Press,
                 ..
             }) => self.scan_char(c),
             Event::Key(KeyEvent {
                 code: KeyCode::Backspace,
+                kind: KeyEventKind::Press,
                 ..
             }) => self.scan_backspace(),
             _ => TokenType::None,
