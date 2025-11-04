@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::terminal::Terminal;
 use crossterm::style::{Attribute, Color, SetForegroundColor};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct Autocomplete {
     keywords: Vec<String>,
     common: String,
@@ -12,19 +12,14 @@ pub(crate) struct Autocomplete {
 
 impl Autocomplete {
     pub fn new() -> Self {
-        Autocomplete {
-            keywords: Vec::new(),
-            common: String::new(),
-            tabbed: false,
-            tab_idx: 0,
-        }
+        Self::default()
     }
 
-    pub(crate) fn get_common(&self) -> &String {
+    pub(crate) fn get_common(&self) -> &str {
         &self.common
     }
 
-    pub(crate) fn get_keywords(&self) -> &Vec<String> {
+    pub(crate) fn get_keywords(&self) -> &[String] {
         &self.keywords
     }
 
@@ -76,18 +71,14 @@ impl<'a> Autocomplete {
             .collect();
 
         self.keywords = similar.clone();
-        self.common = if let Some(common) = return_common_str_from_sorted_collection(&mut similar) {
-            common
-        } else {
-            String::new()
-        };
+        self.common = return_common_str_from_sorted_collection(&mut similar).unwrap_or_default();
     }
 
     pub(crate) fn get_current_tabbed_autocomplete(&self) -> Option<String> {
         if self.tabbed {
             self.keywords
                 .get(self.tab_idx)
-                .map(|keyword| keyword.clone().trim_end().to_string())
+                .map(|keyword| keyword.trim_end().to_string())
         } else {
             None
         }

@@ -232,19 +232,19 @@ impl Executor {
     }
 
     fn exec_valid_char(&mut self, buffer: String) -> Result<Option<String>> {
-        let origin_buffer_char = buffer.clone().pop();
+        let origin_buffer_char = buffer.chars().last();
 
-        if let Some(buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
-            if origin_buffer_char.is_some() {
+        if let Some(autocomplete_buffer) = self.autocomplete.get_current_tabbed_autocomplete() {
+            if let Some(ch) = origin_buffer_char {
                 self.scanner
-                    .update_buffer(format!("{}{}", buffer, origin_buffer_char.unwrap()));
+                    .update_buffer(format!("{}{}", autocomplete_buffer, ch));
             } else {
-                self.scanner.update_buffer(buffer);
+                self.scanner.update_buffer(autocomplete_buffer);
             }
         }
 
-        if origin_buffer_char.is_some() {
-            print!("{}", origin_buffer_char.unwrap());
+        if let Some(ch) = origin_buffer_char {
+            print!("{}", ch);
         }
 
         self.autocomplete.update(&buffer, &self.keywords);
