@@ -97,7 +97,7 @@ impl Executor {
             self.clear_prompt()?;
             return Ok(Some(token));
         } else if self.commands.contains(&token) {
-            self.exec_command(token)?;
+            self.exec_command(&token)?;
             self.terminal.goto_beginning_of_line()?;
             self.reset_prompt()?;
         } else {
@@ -108,7 +108,7 @@ impl Executor {
         Ok(None)
     }
 
-    fn exec_command(&mut self, command: String) -> Result<()> {
+    fn exec_command(&mut self, command: &str) -> Result<()> {
         if command == "/list" {
             self.terminal.goto_next_line()?;
             for token in self.keywords.iter() {
